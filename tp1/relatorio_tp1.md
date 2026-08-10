@@ -52,7 +52,14 @@ Em sistemas robóticos autônomos, como veículos terrestres guiados (AGVs) ou v
 4. **Visualização HUD de Controle:**
    O sistema sobrepõe no frame uma linha guia vertical central, o retângulo delimitador (*bounding box*), o ponto do centroide e um **vetor dinâmico de correção de trajetória** (`cv2.arrowedLine`), indicando a direção e magnitude da guinada necessária (`VIRAR A ESQUERDA` ou `VIRAR A DIREITA`).
 
-## 3. Limitações Técnicas em Condições Reais de Operação
+## 3. Demonstração em Vídeo e Resultados Visuais
+
+- **Vídeo de Demonstração (YouTube):** [Assista à execução completa do pipeline em tempo real](https://www.youtube.com/watch?v=VbNHE0OrCDA)
+- **Amostra do Frame Extraído e Processado:**
+
+![Frame de Amostra Extraído](single_frame.png)
+
+## 4. Limitações Técnicas em Condições Reais de Operação
 
 Apesar de funcional e robusto para cenários de teste, o pipeline clássico apresenta limitações inerentes sob condições operacionais adversas:
 
@@ -68,7 +75,7 @@ Apesar de funcional e robusto para cenários de teste, o pipeline clássico apre
 - **Limitação:** Movimentos rápidos do robô ou da câmera geram manchas de movimento (*motion blur*), borrando as bordas do objeto.
 - **Impacto:** Causa oscilações de alta frequência no cálculo do centroide, gerando ruído no sinal de controle.
 
-## 4. Perspectivas e Soluções Futuras (TP2 em Diante)
+## 5. Perspectivas e Soluções Futuras (TP2 em Diante)
 
 Para superar essas fragilidades em sistemas robóticos de nível industrial ou automotivo, os próximos módulos introduzirão abordagens avançadas:
 

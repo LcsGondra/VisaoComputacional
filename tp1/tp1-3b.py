@@ -2,10 +2,72 @@ import cv2
 import sys
 import numpy as np
 
-def add_label(image, text):
+def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
+    try:
+        rect = cv2.getWindowImageRect(winname)
+        win_w, win_h = rect[2], rect[3]
+    except cv2.error:
+        win_w, win_h = 0, 0
+
+    if win_w <= 0 or win_h <= 0:
+        cv2.imshow(winname, img)
+        return
+
+    img_h, img_w = img.shape[:2]
+    img_aspect = img_w / float(img_h)
+    win_aspect = win_w / float(win_h)
+
+    if win_aspect > img_aspect:
+        new_h = win_h
+        new_w = int(win_h * img_aspect)
+    else:
+        new_w = win_w
+        new_h = int(win_w / img_aspect)
+
+    new_w = max(1, new_w)
+    new_h = max(1, new_h)
+
+    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+    if img.ndim == 2:
+        canvas = np.full((win_h, win_w), bg_color[0], dtype=np.uint8)
+    else:
+        canvas = np.full((win_h, win_w, 3), bg_color, dtype=np.uint8)
+
+    top = (win_h - new_h) // 2
+    left = (win_w - new_w) // 2
+    canvas[top : top + new_h, left : left + new_w] = resized
+    cv2.imshow(winname, canvas)
+
+def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     img_copy = image.copy()
-    cv2.putText(img_copy, text, (25, 65), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 0), 10, cv2.LINE_AA)
-    cv2.putText(img_copy, text, (25, 65), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 255, 255), 4, cv2.LINE_AA)
+    h, w = img_copy.shape[:2]
+
+    target_max_w = int(w * max_w_ratio)
+    target_max_h = int(h * max_h_ratio)
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1.0
+    thickness = 2
+
+    (text_w, text_h), _ = cv2.getTextSize(text, font, font_scale, thickness)
+
+    if text_w > 0 and text_h > 0:
+        scale_w = target_max_w / float(text_w)
+        scale_h = target_max_h / float(text_h)
+        font_scale = min(scale_w, scale_h, 1.2)
+        font_scale = max(0.4, font_scale)
+
+    thickness = max(1, int(font_scale * 2.5))
+    outline_thickness = max(2, thickness * 3)
+
+    (text_w, text_h), _ = cv2.getTextSize(text, font, font_scale, thickness)
+
+    margin_x = max(10, int((w - text_w) / 2))
+    margin_y = max(text_h + 10, int(h * 0.08 + text_h * 0.5))
+
+    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
+    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)
+
     return img_copy
 
 source = "Imagens/BallPit.jpg"
@@ -61,8 +123,12 @@ lbl_cnt = add_label(contour_img, "Contours by Area")
 
 side_by_side = cv2.hconcat([lbl_c1, lbl_c2, lbl_cnt])
 
+win_name = "Canny Pair 1 vs Canny Pair 2 vs Categorized Contours - TP1 Ex3 Item B"
+cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(win_name, 1440, 360)
+
 while True:
-    cv2.imshow("Canny Pair 1 vs Canny Pair 2 vs Categorized Contours - TP1 Ex3 Item B", cv2.resize(side_by_side, (1440, 360)))
+    imshow_keep_aspect_ratio(win_name, side_by_side)
     key = cv2.waitKey(30) & 0xFF
     if key == ord('q') or key == ord('Q'):
         break
