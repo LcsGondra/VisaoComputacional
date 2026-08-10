@@ -2,6 +2,7 @@ import cv2
 import sys
 import numpy as np
 
+
 def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     try:
         rect = cv2.getWindowImageRect(winname)
@@ -38,6 +39,7 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
 
+
 def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     img_copy = image.copy()
     h, w = img_copy.shape[:2]
@@ -65,10 +67,29 @@ def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     margin_x = max(10, int((w - text_w) / 2))
     margin_y = max(text_h + 10, int(h * 0.08 + text_h * 0.5))
 
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 0, 0),
+        outline_thickness,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 255, 255),
+        thickness,
+        cv2.LINE_AA,
+    )
 
     return img_copy
+
 
 source = "./Imagens/BallPit.jpg"
 
@@ -80,19 +101,33 @@ if img is None:
 if img.shape[0] < 480 or img.shape[1] < 480:
     img = cv2.resize(img, (max(img.shape[1], 480), max(img.shape[0], 480)))
 
+# Conversao para os espacos de cor HSV e LAB
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
+# Separacao individual dos canais
 h, s, v = cv2.split(hsv)
 l, a, b = cv2.split(lab)
 
-print("Channel Representations:")
-print("HSV - H (Hue): Matiz da cor (0-179 em OpenCV)")
-print("HSV - S (Saturation): Pureza/saturacao da cor (0-255)")
-print("HSV - V (Value): Brilho/luminosidade da cor (0-255)")
-print("LAB - L (Lightness): Luminosidade (0-255 em uint8)")
-print("LAB - a: Eixo Verde (valores baixos) ate Vermelho (valores altos)")
-print("LAB - b: Eixo Azul (valores baixos) ate Amarelo (valores altos)")
+# ==============================================================================
+# REPRESENTACAO DOS CANAIS NOS ESPACOS DE COR (REQUISITO EXERCICIO 2 ITEM A):
+#
+# 1. ESPACO HSV (Hue, Saturation, Value):
+#    - H (Hue / Matiz): Representa a tonalidade pura da cor em um circulo cromatico.
+#      No OpenCV, assume valores de 0 a 179 (onde 0/180=Vermelho, 60=Verde, 120=Azul).
+#    - S (Saturation / Saturacao): Representa a pureza ou intensidade da cor.
+#      Varia de 0 (cinza totalmente descolorido) a 255 (cor pura e viva).
+#    - V (Value / Brilho): Representa a intensidade luminosa ou brilho da cor.
+#      Varia de 0 (preto absoluto) a 255 (brilho maximo).
+#
+# 2. ESPACO LAB (Lightness, a, b):
+#    - L (Lightness / Luminosidade): Representa a percepcao de brilho do olho humano.
+#      Varia de 0 (preto) a 255 (branco), independente das componentes de cor.
+#    - a (Eixo de cor Verde-Vermelho): Representa a posicao da cor no eixo oponente verde-vermelho.
+#      Valores baixos/escuros tendem ao verde; valores altos/claros tendem ao vermelho.
+#    - b (Eixo de cor Azul-Amarelo): Representa a posicao da cor no eixo oponente azul-amarelo.
+#      Valores baixos/escuros tendem ao azul; valores altos/claros tendem ao amarelo.
+# ==============================================================================
 
 h_bgr = cv2.cvtColor(h, cv2.COLOR_GRAY2BGR)
 s_bgr = cv2.cvtColor(s, cv2.COLOR_GRAY2BGR)
@@ -115,6 +150,7 @@ row1 = cv2.hconcat([lbl_img, lbl_h, lbl_s, lbl_v])
 row2 = cv2.hconcat([lbl_img, lbl_l, lbl_a, lbl_b])
 channels_grid = cv2.vconcat([row1, row2])
 
+# Alteracao da saturacao para 0%, 50% e 150% do valor original
 hsv_0 = hsv.copy()
 hsv_0[:, :, 1] = 0
 bgr_sat_0 = cv2.cvtColor(hsv_0, cv2.COLOR_HSV2BGR)
@@ -144,7 +180,7 @@ while True:
     imshow_keep_aspect_ratio(win1, channels_grid)
     imshow_keep_aspect_ratio(win2, sat_grid)
     key = cv2.waitKey(30) & 0xFF
-    if key == ord('q') or key == ord('Q'):
+    if key == ord("q") or key == ord("Q"):
         break
 
 cv2.destroyAllWindows()

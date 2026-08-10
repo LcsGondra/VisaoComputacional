@@ -2,6 +2,7 @@ import cv2
 import sys
 import numpy as np
 
+
 def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     try:
         rect = cv2.getWindowImageRect(winname)
@@ -37,6 +38,7 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     left = (win_w - new_w) // 2
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
+
 
 source = "./Videos/warden and the paunch.mp4"
 
@@ -79,7 +81,7 @@ while True:
     delay_ms = max(1, int((target_frame_time - processing_time) * 1000))
 
     key = cv2.waitKey(delay_ms) & 0xFF
-    if key == ord('q') or key == ord('Q'):
+    if key == ord("q") or key == ord("Q"):
         break
 
 cap.release()

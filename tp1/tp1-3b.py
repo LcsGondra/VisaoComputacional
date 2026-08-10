@@ -83,8 +83,17 @@ if img.shape[0] < 480 or img.shape[1] < 480:
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-canny1 = cv2.Canny(blurred, 50, 150)
-canny2 = cv2.Canny(blurred, 100, 200)
+# Imagem binarizada de melhor resultado do 3A (Limiar Adaptativo Gaussiano)
+best_binarized = cv2.adaptiveThreshold(
+    blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+)
+
+# Suavizacao leve sobre a imagem binarizada para permitir diferenciacao real nos limiares do Canny
+bin_smooth = cv2.GaussianBlur(best_binarized, (3, 3), 0)
+
+# Canny aplicado sobre a imagem binarizada com 2 pares de thresholds distintos
+canny1 = cv2.Canny(bin_smooth, 30, 90)
+canny2 = cv2.Canny(bin_smooth, 120, 240)
 
 contours, _ = cv2.findContours(canny1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -117,8 +126,8 @@ print(f"Largest contour area: {max_area:.2f} px^2")
 c1_bgr = cv2.cvtColor(canny1, cv2.COLOR_GRAY2BGR)
 c2_bgr = cv2.cvtColor(canny2, cv2.COLOR_GRAY2BGR)
 
-lbl_c1 = add_label(c1_bgr, "Canny (50, 150)")
-lbl_c2 = add_label(c2_bgr, "Canny (100, 200)")
+lbl_c1 = add_label(c1_bgr, "Canny (30, 90) sobre Binarizada")
+lbl_c2 = add_label(c2_bgr, "Canny (120, 240) sobre Binarizada")
 lbl_cnt = add_label(contour_img, "Contours by Area")
 
 side_by_side = cv2.hconcat([lbl_c1, lbl_c2, lbl_cnt])

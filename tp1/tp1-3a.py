@@ -2,6 +2,7 @@ import cv2
 import sys
 import numpy as np
 
+
 def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     try:
         rect = cv2.getWindowImageRect(winname)
@@ -38,6 +39,7 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
 
+
 def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     img_copy = image.copy()
     h, w = img_copy.shape[:2]
@@ -65,10 +67,29 @@ def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     margin_x = max(10, int((w - text_w) / 2))
     margin_y = max(text_h + 10, int(h * 0.08 + text_h * 0.5))
 
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 0, 0),
+        outline_thickness,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 255, 255),
+        thickness,
+        cv2.LINE_AA,
+    )
 
     return img_copy
+
 
 source = "./Imagens/BallPit.jpg"
 
@@ -83,14 +104,23 @@ if img.shape[0] < 480 or img.shape[1] < 480:
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 _, thresh_global = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-thresh_adapt = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+thresh_adapt = cv2.adaptiveThreshold(
+    gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+)
 otsu_val, thresh_otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
+# ==============================================================================
+# JUSTIFICATIVA TECNICA - METODO DE OTSU (REQUISITO EXERCICIO 3 ITEM A):
+#
+# O metodo de Otsu eh superior ao limiar global fixo em imagens com iluminacao
+# nao uniforme porque calcula de forma automatica e adaptativa o limiar otimo (T).
+# O algoritmo analisa o histograma de intensidades da imagem e encontra o limiar que
+# minimiza a variancia intraclasse (ou maximiza a variancia interclasse) entre os
+# pixels de fundo e primeiro plano. Com isso, ele se ajusta dinamicamente a
+# variacoes de luz e sombras sem necessitar de uma constante fixa arbitraria.
+# ==============================================================================
+
 print(f"Calculated Otsu Threshold Value: {otsu_val:.2f}")
-print("Technical Justification:")
-print("O metodo de Otsu eh superior ao limiar global em iluminacao nao uniforme pois calcula automaticamente")
-print("o limiar otimo minimizando a variancia intraclasse (ou maximizando a variancia interclasse) do histograma,")
-print("adaptando-se a distribuicao bimodal de intensidade da imagem sem depender de um valor fixo arbitrario.")
 
 g_bgr = cv2.cvtColor(thresh_global, cv2.COLOR_GRAY2BGR)
 a_bgr = cv2.cvtColor(thresh_adapt, cv2.COLOR_GRAY2BGR)
@@ -109,7 +139,7 @@ cv2.resizeWindow(win_name, 1440, 360)
 while True:
     imshow_keep_aspect_ratio(win_name, side_by_side)
     key = cv2.waitKey(30) & 0xFF
-    if key == ord('q') or key == ord('Q'):
+    if key == ord("q") or key == ord("Q"):
         break
 
 cv2.destroyAllWindows()

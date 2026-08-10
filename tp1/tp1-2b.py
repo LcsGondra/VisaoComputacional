@@ -2,6 +2,7 @@ import cv2
 import sys
 import numpy as np
 
+
 def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     try:
         rect = cv2.getWindowImageRect(winname)
@@ -38,6 +39,7 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
 
+
 def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     img_copy = image.copy()
     h, w = img_copy.shape[:2]
@@ -65,10 +67,29 @@ def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
     margin_x = max(10, int((w - text_w) / 2))
     margin_y = max(text_h + 10, int(h * 0.08 + text_h * 0.5))
 
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 0, 0), outline_thickness, cv2.LINE_AA)
-    cv2.putText(img_copy, text, (margin_x, margin_y), font, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 0, 0),
+        outline_thickness,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        img_copy,
+        text,
+        (margin_x, margin_y),
+        font,
+        font_scale,
+        (0, 255, 255),
+        thickness,
+        cv2.LINE_AA,
+    )
 
     return img_copy
+
 
 source = "./Imagens/BallPit.jpg"
 
@@ -87,8 +108,12 @@ blurred = cv2.GaussianBlur(img, (9, 9), 10.0)
 unsharp_mask = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
 
 var_orig = cv2.Laplacian(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
-var_manual = cv2.Laplacian(cv2.cvtColor(sharpened_manual, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
-var_unsharp = cv2.Laplacian(cv2.cvtColor(unsharp_mask, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
+var_manual = cv2.Laplacian(
+    cv2.cvtColor(sharpened_manual, cv2.COLOR_BGR2GRAY), cv2.CV_64F
+).var()
+var_unsharp = cv2.Laplacian(
+    cv2.cvtColor(unsharp_mask, cv2.COLOR_BGR2GRAY), cv2.CV_64F
+).var()
 
 print(f"Laplacian Variance - Original: {var_orig:.2f}")
 print(f"Laplacian Variance - Sharpening Manual (cv2.filter2D): {var_manual:.2f}")
