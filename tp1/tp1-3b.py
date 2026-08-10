@@ -1,6 +1,20 @@
+import os
 import cv2
 import sys
 import numpy as np
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+def get_asset_path(relative_path):
+    if os.path.exists(relative_path):
+        return relative_path
+    path_from_script = os.path.abspath(os.path.join(script_dir, "..", "..", relative_path))
+    if os.path.exists(path_from_script):
+        return path_from_script
+    path_from_script_one_up = os.path.abspath(os.path.join(script_dir, "..", relative_path))
+    if os.path.exists(path_from_script_one_up):
+        return path_from_script_one_up
+    return relative_path
 
 def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     try:
@@ -70,7 +84,7 @@ def add_label(image, text, max_w_ratio=0.88, max_h_ratio=0.12):
 
     return img_copy
 
-source = "Imagens/BallPit.jpg"
+source = get_asset_path("Imagens/BallPit.jpg")
 
 img = cv2.imread(source)
 if img is None:

@@ -35,12 +35,23 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     else:
         canvas = np.full((win_h, win_w, 3), bg_color, dtype=np.uint8)
 
-    top = (win_h - new_h) // 2
-    left = (win_w - new_w) // 2
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
 
-source = "Videos/warden and the paunch.mp4"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+def get_asset_path(relative_path):
+    if os.path.exists(relative_path):
+        return relative_path
+    path_from_script = os.path.abspath(os.path.join(script_dir, "..", "..", relative_path))
+    if os.path.exists(path_from_script):
+        return path_from_script
+    path_from_script_one_up = os.path.abspath(os.path.join(script_dir, "..", relative_path))
+    if os.path.exists(path_from_script_one_up):
+        return path_from_script_one_up
+    return relative_path
+
+source = get_asset_path("Videos/warden and the paunch.mp4")
 
 cap = cv2.VideoCapture(source)
 if not cap.isOpened():

@@ -38,7 +38,7 @@ def imshow_keep_aspect_ratio(winname, img, bg_color=(0, 0, 0)):
     canvas[top : top + new_h, left : left + new_w] = resized
     cv2.imshow(winname, canvas)
 
-source = "Videos/warden and the paunch.mp4"
+source = get_asset_path("Videos/warden and the paunch.mp4")
 
 cap = cv2.VideoCapture(source)
 if not cap.isOpened():
