@@ -1,0 +1,446 @@
+26T3-EDC-R3C1M1P1-SIRO-P2: Teste de Performance - TP2 [OBRIGATÓRIO]
+&nbsp;
+AVA
+Painel lateral
+Recente
+Visão Computacional para Robótica [26E3_2]
+Projeto de Bloco: Sistemas Robóticos [26E3_5]
+Fundamentos de Sistemas Robóticos com ROS 2 [26E3_1]
+Verilog Avançado e Arquiteturas FPGA [26E2_3]
+Processamento Otimizado em Assembly ARM 64-bits [26E2_4]
+Recente
+Visão Computacional para Robótica [26E3_2]
+Projeto de Bloco: Sistemas Robóticos [26E3_5]
+Fundamentos de Sistemas Robóticos com ROS 2 [26E3_1]
+Verilog Avançado e Arquiteturas FPGA [26E2_3]
+Processamento Otimizado em Assembly ARM 64-bits [26E2_4]
+0
+Notificações
+Você não tem nenhuma notificação
+Mostrar todos
+Lucas Dias de Gondra
+Minhas disciplinas
+Perfil
+Meu histórico
+Preferências
+Sair
+Course Overview
+Sections
+Geral
+1
+PAUTA DA DISCIPLINA
+Presença
+Avaliações
+2
+Teste de Performance - TP1 [Obrigatório]
+Tarefa
+Teste de Performance - TP2 [OBRIGATÓRIO]
+Tarefa
+Teste de Performance - TP3 [Obrigatório]
+Tarefa
+Assessment [Obrigatório]
+Tarefa
+Ir para o conteúdo principal
+🕪 Exibir Audima
+Ativar para ir para o player da Audima
+Visão Computacional para Robótica [26E3_2]
+Página inicial do site
+Meus cursos
+Visão Computacional para Robótica [26E3_2]
+Avaliações
+Teste de Performance - TP2 [OBRIGATÓRIO]
+Pular Calendário
+Calendário
+◄
+|
+agosto 2026
+|
+►
+Domingo
+Dom
+Segunda-feira
+Seg
+Terça-feira
+Ter
+Quarta-feira
+Qua
+Quinta-feira
+Qui
+Sexta-feira
+Sex
+Sábado
+Sáb
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+Sem eventos, sábado, 1 agosto
+1
+Sem eventos, domingo, 2 agosto
+2
+Sem eventos, segunda, 3 agosto
+3
+Sem eventos, terça, 4 agosto
+4
+Sem eventos, quarta, 5 agosto
+5
+Sem eventos, quinta, 6 agosto
+6
+Sem eventos, sexta, 7 agosto
+7
+Sem eventos, sábado, 8 agosto
+8
+Sem eventos, domingo, 9 agosto
+9
+1 evento, segunda, 10 agosto
+10
+26T3-EDC-R3C1M1P1-SIRO-P2: Teste de Performance - TP1 [Obrigatório] está marcado(a) para esta data
+Sem eventos, terça, 11 agosto
+11
+Sem eventos, quarta, 12 agosto
+12
+Sem eventos, quinta, 13 agosto
+13
+Sem eventos, sexta, 14 agosto
+14
+Sem eventos, sábado, 15 agosto
+15
+Sem eventos, domingo, 16 agosto
+16
+Sem eventos, segunda, 17 agosto
+17
+Sem eventos, terça, 18 agosto
+18
+Sem eventos, quarta, 19 agosto
+19
+Sem eventos, quinta, 20 agosto
+20
+Sem eventos, sexta, 21 agosto
+21
+Sem eventos, sábado, 22 agosto
+22
+Sem eventos, domingo, 23 agosto
+23
+1 evento, segunda, 24 agosto
+24
+26T3-EDC-R3C1M1P1-SIRO-P2: Teste de Performance - TP2 [OBRIGATÓRIO] está marcado(a) para esta data
+Sem eventos, terça, 25 agosto
+25
+Sem eventos, quarta, 26 agosto
+26
+Sem eventos, quinta, 27 agosto
+27
+Sem eventos, sexta, 28 agosto
+28
+Sem eventos, sábado, 29 agosto
+29
+Sem eventos, domingo, 30 agosto
+30
+Sem eventos, segunda, 31 agosto
+31
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+férias, feriados e dias sem aula (ocultar)
+apresentações de projeto e outras datas importantes (ocultar)
+datas de entrega de TPs e ATs (ocultar)
+evento de grupo (ocultar)
+evento particular (ocultar)
+outro (ocultar)
+Pular Navegação
+Navegação
+Página inicial do site
+Minhas disciplinas
+Páginas do site
+Tags
+Minhas entregas
+Meus cursos
+Algoritmos Avançados [23E4_2]
+Aplicações Robóticas com ROS 2 [26E4_3]
+Arquitetura e Infraestrutura da Tecnologia da Info...
+Biblioteca
+Capacitação do Aluno no Modelo CBL+PBL
+Clube de Programação e Algoritmo [24E2_1]
+Conteúdo Geral [ENADE 2026]
+Dados para Machine Learning: Feature Engineering [...
+Desenvolvimento com Serviços WCF e Microsoft Azure...
+Desenvolvimento de Aplicações Web ASP .NET MVC e W...
+Desenvolvimento de Interfaces Android [22E2_1]
+Desenvolvimento de Serviços com Spring Boot [26E1_1]
+Desenvolvimento de Software Ágil e Escalável com M...
+Desenvolvimento Kotlin: Android [22E3_3]
+Design thinking e fundamentos do design para Web
+Estruturas de Dados e Algoritmos Avançados [25E4_3]
+Fóruns e documentos importantes do Bloco de Entrada
+Frameworks Front-End e Conexão com Back-End [23E1_4]
+Fundamentos de Desenvolvimento com C# [21E4_1]
+Fundamentos de Modelagem Relacional e SQL [23E3_3]
+Fundamentos de Programação com Python [23E2_2]
+Fundamentos de Python para Processamento de Dados ...
+Fundamentos de Sistemas Robóticos com ROS 2 [26E3_1]
+Fundamentos de Verilog e FPGA [26E1_1]
+Fundamentos do Desenvolvimento Android [22E2_2]
+Fundamentos do Desenvolvimento de Aplicações Web A...
+Fundamentos Matemáticos e Métodos Analíticos [ENAD...
+Inteligência Artificial: Classificação [24E3_3]
+Inteligência Artificial: Clusterização [24E3_4]
+Inteligência Artificial: Model LifeCycle [24E2_1]
+Interação Humano-Computador para Desenvolvimento F...
+Interfaces com HTML e CSS [22E4_1]
+Introdução à Matemática para Processamento Digital...
+Introdução ao Processamento Digital de Sinais [25E...
+Javascript [22E4_2]
+Lógica, Computação e Algoritmos [21E3_1]
+Matemática para Processamento Digital de Sinais [2...
+Melhores Práticas em DevOps [24E1_3]
+Microsserviços e DevOps com Spring Boot e Spring C...
+Microsserviços e DevOps com Spring Boot e Spring C...
+Otimização e Metaheurísticas [22E4]
+Processamento Digital de Sinais [25E2_4]
+Processamento Otimizado em Assembly ARM 64-bits [2...
+Programação Assembly ARM 64-bits [26E1_2]
+Programação Distribuída com Redes usando Linux e P...
+Projeto de Bloco: Ciência da Computação [25E3_5]
+Projeto de Bloco: Desenvolvimento .NET [22E1_5]
+Projeto de Bloco: Desenvolvimento Android [22E2_5]
+Projeto de Bloco: Desenvolvimento Front-End [22E4_5]
+Projeto de Bloco: Engenharia de Softwares Escaláve...
+Projeto de Bloco: Inteligência Artificial e Machin...
+Projeto de Bloco: Processamento de Dados [23E2_5]
+Projeto de Bloco: Processamento Digital de Sinais ...
+Projeto de Bloco: Sistemas Digitais Embarcados [26...
+Projeto de Bloco: Sistemas Robóticos [26E3_5]
+Projeto em Fundamentos da Computação [21E3_5]
+Segurança no Processo e Desenvolvimento de Softwar...
+Segurança, Monetização e Publicação de Aplicativos...
+Sistemas Operacionais com Linux e Python [25E3_2]
+Soft skills na prática: desenvolvendo habilidades ...
+Visão Computacional para Robótica [26E3_2]
+Participantes
+Lucas Dias de Gondra
+Competências
+Geral
+Avaliações
+Teste de Performance - TP1 [Obrigatório]
+Teste de Performance - TP2 [OBRIGATÓRIO]
+Envios avaliações
+Teste de Performance - TP3 [Obrigatório]
+Assessment [Obrigatório]
+Mais...
+Cursos
+Pular Lista de usuários
+Lista de usuários
+Teste de Performance - TP2 [OBRIGATÓRIO]
+Olá,
+Lucas
+.
+Chegamos ao
+segundo Teste de Performance (TP2)
+da disciplina
+DR2 – Visão Computacional para Robótica
+.
+Neste TP, você irá aprofundar o domínio de técnicas de visão computacional em Python com OpenCV e TensorFlow/Keras, com foco em estimativa de profundidade, segmentação de regiões de interesse, detecção facial, extração de características e arquiteturas
+CNN para sistemas robóticos.
+Os exercícios simulam situações reais de engenharia de percepção, nas quais é necessário: estimar dimensões e profundidade de objetos na cena, detectar e reconhecer faces em tempo real, extrair e comparar características locais de imagens e desenvolver
+redes neurais convolucionais para classificação e extração de features — todos componentes essenciais de pipelines de percepção para robótica, drones e veículos autônomos.
+Uso de IAs: Sinal Amarelo
+🟡
+Neste trabalho, os alunos têm permissão para usar ferramentas baseadas em IA
+com moderação
+. Todas as fontes, incluindo ferramentas de IA, devem ser devidamente citadas. O uso de IA de forma inconsistente com os parâmetros acima será considerado má conduta acadêmica e estará sujeito à aplicação do código disciplinar. Observe que os resultados da IA podem ser tendenciosos e imprecisos. É responsabilidade do aluno garantir que as informações usadas da IA sejam precisas. Aprender como usar ferramentas baseadas em IA de maneira cuidadosa e estratégica contribui para o desenvolvimento das habilidades, refinamento de seu trabalho e prepara o aluno para sua futura carreira.
+Exercício 1
+Estimativa de profundidade e segmentação de ROI
+Tarefa:
+Em sistemas robóticos com câmeras estéreo ou multicâmera, a estimativa de profundidade é essencial para navegação, evitação de obstáculos e manipulação de objetos. Antes de integrar sensores reais, engenheiros validam os algoritmos de disparidade e segmentação
+com pares de imagens controlados. Este exercício exige que você calcule um mapa de disparidade e implemente uma pipeline de segmentação de ROI em tempo real, demonstrando domínio da relação entre disparidade, profundidade relativa e segmentação por
+cor.
+Requisitos Técnicos e Saídas Esperadas:
+Item A:
+Carregue um par de imagens estéreo (ou simule com duas imagens do mesmo objeto em perspectivas ligeiramente diferentes);
+Calcule o mapa de disparidade usando cv2.StereoBM_create ou cv2.StereoSGBM_create e exiba-o com colormap COLORMAP_JET;
+Normalize o mapa para estimar profundidade relativa; identifique o pixel mais próximo e o mais distante e imprima suas coordenadas e valores normalizados;
+Comente no código como essa estimativa se comportaria em uma câmera embarcada em drone;
+Validação:
+mapa de disparidade colorido exibido; terminal com coordenadas e valores do pixel mais próximo e mais distante; comentário técnico no código.
+Item B:
+Implemente uma pipeline de segmentação de ROI em vídeo ou stream: (1) segmente o objeto de interesse por range HSV, (2) aplique operações morfológicas (erode + dilate) para limpar a máscara, (3) extraia e destaque a ROI com retângulo e máscara colorida
+semitransparente e (4) calcule a proporção da área da ROI em relação ao frame total, imprimindo-a a cada frame;
+O sistema deve funcionar em tempo real ou sobre vídeo;
+Validação:
+feed com ROI destacada, bounding box e máscara semitransparente; terminal com proporção de área por frame.
+Exercício 2
+Detecção e reconhecimento facial
+Tarefa:
+Detecção e reconhecimento facial são aplicações centrais em sistemas de segurança, interação humano-robô e controle de acesso embarcado. Neste exercício, você deve implementar um detector facial em tempo real usando Haar Cascades e, em seguida, um sistema
+de reconhecimento com identidades cadastradas, demonstrando domínio do trade-off entre sensibilidade e especificidade e da latência de inferência em sistemas embarcados.
+Requisitos Técnicos e Saídas Esperadas:
+Item A:
+Implemente um detector facial em tempo real usando cv2.CascadeClassifier com haarcascade_frontalface_default.xml;
+Para cada rosto detectado: desenhe o bounding box, extraia a ROI facial, redimensione para 48×48 px e salve em disco numerado;
+Experimente ao menos dois pares de parâmetros scaleFactor e minNeighbors; imprima, para cada configuração, o número de falsos positivos visíveis e a taxa de detecção estimada;
+Justifique no código o trade-off entre sensibilidade e especificidade para cada configuração testada;
+Validação:
+feed com bounding boxes; imagens 48×48 salvas em disco; terminal com resultados por configuração; comentário de trade-off no código.
+Item B:
+Use a biblioteca face_recognition ou DeepFace para implementar um sistema de reconhecimento facial: (1) cadastre ao menos 3 identidades a partir de fotos estáticas, (2) processe um vídeo ou stream identificando cada rosto com nome ou "desconhecido"
+e (3) meça e imprima o tempo médio de inferência por frame em ms;
+Discuta brevemente em comentário por que esse tipo de sistema requer cuidados éticos em aplicações robóticas (vigilância, drones);
+Validação:
+feed com nome sobreposto ao bounding box; terminal com latência média de inferência; comentário ético no código.
+Exercício 3
+Descritores de características e matching de imagens
+Tarefa:
+Extração de características locais é a base de localização visual, recuperação de imagens e rastreamento em robótica. Antes de utilizar descritores em sistemas reais, engenheiros comparam o desempenho de diferentes métodos em termos de velocidade, robustez
+e tamanho do vetor de características. Este exercício exige que você compare os principais descritores, realize matching entre imagens e calcule a homografia para alinhamento, demonstrando domínio do pipeline completo de localização visual.
+Requisitos Técnicos e Saídas Esperadas:
+Item A:
+Escolha duas imagens do mesmo objeto ou cena sob condições diferentes (rotação, escala ou iluminação distintas);
+Extraia keypoints e descritores usando SIFT, ORB e AKAZE (ou SURF, se disponível);
+Para cada método, exiba a imagem com os keypoints desenhados e imprima: número de keypoints detectados, tempo de extração em ms e tamanho do vetor de descritor por ponto;
+Monte uma tabela comparativa comentada no código com os três métodos;
+Validação:
+três imagens com keypoints visualizados; terminal com tabela comparativa de número de keypoints, tempo e dimensão do descritor.
+Item B:
+Implemente matching entre as duas imagens do item A usando BFMatcher com cross-check e FLANN;
+Aplique o teste de razão de Lowe (threshold 0.75) para filtrar matches ruins e exiba as correspondências com cv2.drawMatches;
+Calcule a homografia usando RANSAC (cv2.findHomography) e aplique-a para alinhar uma imagem sobre a outra com cv2.warpPerspective;
+Imprima o número de inliers do RANSAC e comente a relevância para localização visual em robótica;
+Validação:
+imagem com matches visualizados; imagem alinhada por homografia; terminal com número de inliers; comentário técnico no código.
+Exercício 4
+Arquitetura CNN com TensorFlow/Keras
+Tarefa:
+Redes neurais convolucionais são o estado da arte em classificação de imagens e extração de features para visão robótica. Antes de utilizar modelos pré-treinados, engenheiros de percepção implementam e treinam CNNs do zero para compreender o comportamento
+das camadas convolucionais e o processo de aprendizado de representações. Este exercício exige que você projete, treine e analise uma CNN, além de utilizá-la como extratora de features e comparar as representações aprendidas com descritores clássicos.
+Requisitos Técnicos e Saídas Esperadas:
+Item A:
+Projete e treine uma CNN do zero com TensorFlow/Keras para classificar imagens em ao menos 3 classes (use CIFAR-10 reduzido, Fashion-MNIST ou dataset próprio);
+A arquitetura deve conter: ao menos 2 blocos Conv2D + MaxPooling, camadas Flatten e Dense, e saída com softmax;
+Treine por no mínimo 10 épocas, plote as curvas de acurácia e loss (treino vs. validação) e imprima a acurácia final no conjunto de teste;
+Identifique e comente se há indício de overfitting nas curvas de treino;
+Validação:
+gráficos de curvas de treino e validação; terminal com acurácia de teste; comentário sobre overfitting no código.
+Item B:
+Use a CNN treinada no item A como extratora de features: remova a camada de classificação final e extraia o vetor de features da penúltima camada Dense para 20 imagens de teste (ao menos 4 por classe);
+Reduza a dimensionalidade com PCA para 2D e plote o scatter plot colorido por classe;
+Comente se as classes estão bem separadas no espaço de features e o que isso indica sobre a qualidade das representações aprendidas;
+Compare com os descritores ORB extraídos no Exercício 3 sobre as mesmas imagens;
+Validação:
+scatter plot PCA 2D com classes coloridas; comentário sobre separabilidade das classes; comparação com ORB no código.
+Formato de entrega
+Todos os arquivos .py, notebooks .ipynb e o relatório .md devem ser compactados em um único arquivo .ZIP;
+Entregar um relatório técnico contendo:
+comandos de instalação do ambiente e execução de cada script;
+justificativas objetivas das decisões adotadas em cada exercício;
+evidências de execução (prints de terminal, capturas das janelas OpenCV e gráficos de treino).
+Código organizado, nomeado conforme os exercícios (ex1a.py, ex1b.py, etc.) e com comentários técnicos suficientes para auditoria.
+Assim que terminar, salve seu trabalho em um arquivo ZIP, nomeando-o conforme a regra
+“nome_sobrenome_DR2_TP2.ZIP”
+e envie como resposta a este TP.
+Status da entrega
+Status da entrega
+Nenhuma tentativa
+Status da avaliação
+Não avaliado
+Data de entrega
+segunda, 24 ago 2026, 23:59
+Tempo restante
+6 dias 4 horas
+Rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe calcular mapas de disparidade e estimar profundidade relativa a partir de pares de imagens com OpenCV?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe implementar pipelines de segmentação de ROI com morfologia e exibição em tempo real?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe configurar e comparar parâmetros de detecção facial com Haar Cascades, justificando o trade-off entre sensibilidade e especificidade?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe implementar reconhecimento facial com bibliotecas de alto nível e medir latência de inferência em tempo real?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe extrair e comparar descritores SIFT, ORB e AKAZE com métricas quantitativas de desempenho?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe realizar matching com BFMatcher e FLANN, aplicar o teste de Lowe e calcular homografia com RANSAC?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe projetar, treinar e avaliar uma CNN com TensorFlow/Keras, diagnosticando overfitting pelas curvas de treino?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe usar uma CNN como extratora de features e comparar representações aprendidas com descritores clássicos via PCA?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+2. Implementar e treinar redes neurais profundas (MLP e CNNs) com OpenCV e TensorFlow/Keras
+O aluno demonstrou que sabe organizar e documentar o código de forma profissional, permitindo auditoria e reprodutibilidade?
+Não demonstrou o item de rubrica
+Demonstrou o item de rubrica
+Última modificação
+-
+Comentários da entrega
+___picture___
+___name___
+-
+___time___
+___content___
+Mostrar comentários
+Comentários (0)
+Salvar comentário
+|
+Cancelar
+Adicionar entrega do trabalho
+Você ainda não fez um envio.
+Página anterior
+Seguir para...
+Seguir para...
+PAUTA DA DISCIPLINA
+Teste de Performance - TP1 [Obrigatório]
+Teste de Performance - TP3 [Obrigatório]
+Assessment [Obrigatório]
+Próximo página
+Sites das Escolas
+Faculdade Infnet
+ECDD&nbsp;- Escola de Comunicação e Design Digital
+NOSSAS REDES SOCIAS
+Sites das Escolas
+Links Rápidos
+Requerimentos
+Calendário Acadêmico
+Biblioteca Virtual
+NOSSAS REDES SOCIAS
+Links Rápidos
+Atendimento
+Atendimento | Secretaria Infnet
+Atendimento | Secretaria ECDD
+Atendimento | Suporte de TI
+Atendimento | Carreiras
+Atendimento | Biblioteca e Certificações
+Atendimento | Coaching e Psicopedagogia
+NOSSAS REDES SOCIAS
+Atendimento
+Redes sociais
+...
+NOSSAS REDES SOCIAS
+Redes sociais
+Ambiente Virtual de Aprendizado © 2026. All rights reserved.
+Terms &amp; Conditions
+Privacy Policy
+Você acessou como
+Lucas Dias de Gondra
+(
+Sair
+)
+Resumo de retenção de dados
+Baixar o aplicativo móvel.
