@@ -1,6 +1,10 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import cv2
 import numpy as np
-from pathlib import Path
+from utils import imshow_keep_aspect_ratio, obter_diretorios
 
 
 def carregar_ou_gerar_par(saida_dir):
@@ -48,8 +52,8 @@ def carregar_ou_gerar_par(saida_dir):
 
 
 def main():
-    saida_dir = Path("dados/saidas")
-    saida_dir.mkdir(parents=True, exist_ok=True)
+    dirs = obter_diretorios(__file__)
+    saida_dir = dirs["saidas"]
 
     img_a, img_b = carregar_ou_gerar_par(saida_dir)
     cinza_a = cv2.cvtColor(img_a, cv2.COLOR_BGR2GRAY)
@@ -100,6 +104,7 @@ def main():
     cv2.imwrite(str(saida_dir / "tp2_3b_imagem_alinhada_homografia.png"), img_alinhada)
 
     sobreposicao = cv2.addWeighted(img_b, 0.5, img_alinhada, 0.5, 0)
+    cv2.putText(sobreposicao, f"Homografia RANSAC: {inliers_total} Inliers ({taxa_inliers:.1f}%)", (25, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 255, 255), 2)
     cv2.imwrite(str(saida_dir / "tp2_3b_sobreposicao_alinhada.png"), sobreposicao)
 
     print("=== MATCHING E ESTIMATIVA DE HOMOGRAFIA COM RANSAC (TP2 - 3B) ===")
@@ -110,20 +115,35 @@ def main():
     print(f"Matriz de Homografia estimada (3x3):")
     print(np.array2string(h_mat, precision=4, suppress_small=True))
 
-    print("\n=== RELEVANCIA PARA LOCALIZACAO VISUAL E SLAM EM ROBOTICA ===")
-    print("1. Estimativa de Pose e Odometria Visual:")
-    print("   O calculo da homografia ou matriz essencial a partir de inliers permite deduzir")
-    print("   a rotacao e translacao da camera entre frames consecutivos, viabilizando SLAM.")
-    print("2. Rejeicao de Outliers em Ambientes Dinamicos:")
-    print("   O RANSAC filtra correspondencias espurias causadas por sombras, reflexos")
-    print("   ou objetos em movimento na cena, garantindo robustez geometrica.")
-    print("3. Reconhecimento de Lugares e Loop Closure:")
-    print("   Casar descritores invariantes permite ao robo reconhecer locais previamente")
-    print("   visitados e corrigir a deriva acumulada na trajetoria.")
+    # Relevancia de Homografia e RANSAC para Localizacao Visual e SLAM em Robotica:
+    # 1. Estimativa de Pose e Odometria Visual (VO):
+    #    O alinhamento geometrico projetivo (Homografia H ou Matriz Essencial E) entre pares de quadros
+    #    permite decompor a rotacao (R) e translacao (t) da camera do robo/drone em relacao ao ambiente.
+    # 2. Rejeicao Robusta de Outliers com RANSAC:
+    #    Em cenas reais, alteracoes de iluminacao, repeticao de texturas ou objetos em movimento geram
+    #    falsas correspondencias. O RANSAC amostra hipoteses minimas e seleciona o modelo com maior consenso,
+    #    garantindo que apenas inliers geometricamente consistentes guiem a navegacao.
+    # 3. Deteccao de Fechamento de Ciclo (Loop Closure) e Mapeamento Global:
+    #    Ao retornar a uma regiao mapeada anteriormente, o casamento de pontos-chave com verificacao por
+    #    homografia valida o reencontro do local e corrige a deriva acumulada (drift) do robo.
 
-    cv2.imshow("Matches Filtrados", img_matches)
-    cv2.imshow("Sobreposicao Alinhada por Homografia", sobreposicao)
-    cv2.waitKey(1000)
+    print("\n[Pressione 'q' ou 'Q' para fechar as janelas]")
+
+    win_matches = "Matches Filtrados (FLANN + Lowe Ratio < 0.75) - TP2 Ex3B"
+    win_homografia = "Sobreposicao Alinhada por Homografia RANSAC - TP2 Ex3B"
+
+    cv2.namedWindow(win_matches, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(win_homografia, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(win_matches, 1200, 500)
+    cv2.resizeWindow(win_homografia, 800, 600)
+
+    while True:
+        imshow_keep_aspect_ratio(win_matches, img_matches)
+        imshow_keep_aspect_ratio(win_homografia, sobreposicao)
+        key = cv2.waitKey(30) & 0xFF
+        if key == ord("q") or key == ord("Q"):
+            break
+
     cv2.destroyAllWindows()
 
 

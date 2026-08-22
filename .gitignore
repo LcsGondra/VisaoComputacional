@@ -8,6 +8,13 @@ venv/
 ENV/
 *.keras
 *.h5
+*.pth
+*.pt
 *.onnx
 .DS_Store
 Thumbs.db
+
+# TP2 runtime captures, personal references and heavy caches
+tp2/dados/faces_48x48/
+tp2/dados/dataset/
+tp2/modelos/referencias/

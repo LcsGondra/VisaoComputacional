@@ -1,0 +1,11 @@
+# Visao Computacional e Robotica - TP2 Requirements
+numpy>=1.24.0
+opencv-python>=4.8.0
+torch>=2.0.0
+torchvision>=0.15.0
+deepface>=0.0.90
+tf-keras>=2.15.0
+tensorflow>=2.15.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+Pillow>=9.5.0
