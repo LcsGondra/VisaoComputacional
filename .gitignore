@@ -1,3 +1,4 @@
+# Ambientes virtuais e caches Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,15 +7,45 @@ __pycache__/
 env/
 venv/
 ENV/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Modelos treinados, pesos e binarios
 *.keras
 *.h5
 *.pth
 *.pt
 *.onnx
-.DS_Store
-Thumbs.db
+*.caffemodel
+*.prototxt
+*.joblib
+*.pkl
+*.bin
+*.tflite
 
-# TP2 runtime captures, personal references and heavy caches
-tp2/dados/faces_48x48/
-tp2/dados/dataset/
-tp2/modelos/referencias/
+# Videos e midias baixadas ou gravadas em execucao
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Imagens geradas/baixadas e planilhas de saida
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.csv
+
+# Diretorios de dados, saidas e modelos gerados/baixados em runtime
+dados/
+modelos/
+saidas/
+**/dados/
+**/modelos/
+**/saidas/
+**/processadas/
+**/teste/
