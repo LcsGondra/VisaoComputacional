@@ -55,11 +55,9 @@ def executar_camshift_kalman(caminho_video):
             break
         frame_idx += 1
 
-        # 1. Predicao do Kalman
         pred = kf.predict()
         px, py = float(pred[0, 0]), float(pred[1, 0])
 
-        # 2. Medicao pelo CamShift
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         m1 = cv2.inRange(hsv, np.array([0, 80, 40]), np.array([12, 255, 255]))
         m2 = cv2.inRange(hsv, np.array([168, 80, 40]), np.array([180, 255, 255]))
@@ -72,45 +70,61 @@ def executar_camshift_kalman(caminho_video):
         mx, my = float(rot_rect[0][0]), float(rot_rect[0][1])
         w_box, h_box = rot_rect[1]
 
-        # Tratamento de oclusao (regiao do obstaculo entre frames 110 e 145)
-        em_obstaculo = (110 <= frame_idx <= 145) or (w_box < 10 or h_box < 10)
+        em_obstaculo = (110 <= frame_idx <= 145)
+        camshift_colapsou = (w_box < 10 or h_box < 10 or mx < 5 or my < 5)
 
-        if not em_obstaculo:
-            # Correcao nominal com a medicao
+        if not em_obstaculo and not camshift_colapsou:
             measurement = np.array([[np.float32(mx)], [np.float32(my)]])
             corr = kf.correct(measurement)
             ex, ey = float(corr[0, 0]), float(corr[1, 0])
             x_med.append(mx)
             y_med.append(my)
+            em_oclusao = False
         else:
-            # Oclusao: usa a predicao inercial do Kalman
-            ex, ey = px, py
-            x_med.append(np.nan)
-            y_med.append(np.nan)
-            track_window = (int(px - 28), int(py - 28), 56, 56)
+            pts = cv2.findNonZero(backproj)
+            if pts is not None and len(pts) > 30 and (frame_idx > 145 or frame_idx < 110):
+                m = cv2.moments(pts)
+                if m["m00"] > 0:
+                    cx_vis = float(m["m10"] / m["m00"])
+                    cy_vis = float(m["m01"] / m["m00"])
+                else:
+                    m_pts = cv2.mean(pts)[:2]
+                    cx_vis, cy_vis = float(m_pts[0]), float(m_pts[1])
+
+                track_window = (int(cx_vis - 28), int(cy_vis - 28), 56, 56)
+                measurement = np.array([[np.float32(cx_vis)], [np.float32(cy_vis)]])
+                corr = kf.correct(measurement)
+                ex, ey = float(corr[0, 0]), float(corr[1, 0])
+                mx, my = cx_vis, cy_vis
+                rot_rect = ((cx_vis, cy_vis), (56, 56), 0.0)
+                x_med.append(cx_vis)
+                y_med.append(cy_vis)
+                em_oclusao = False
+            else:
+                ex, ey = px, py
+                x_med.append(np.nan)
+                y_med.append(np.nan)
+                track_window = (int(px - 28), int(py - 28), 56, 56)
+                em_oclusao = True
 
         x_kal.append(ex)
         y_kal.append(ey)
 
-        # 3. Desenho no Frame
         f_draw = frame.copy()
 
-        # Rastro da trajetoria estimada
         for i in range(1, len(x_kal)):
             pt1 = (int(x_kal[i - 1]), int(y_kal[i - 1]))
             pt2 = (int(x_kal[i]), int(y_kal[i]))
             cv2.line(f_draw, pt1, pt2, (0, 255, 255), 2)
 
-        # Circulo Vermelho = Medicao CamShift (quando visivel)
-        if not em_obstaculo:
+        if not em_oclusao:
             cv2.ellipse(f_draw, rot_rect, (0, 255, 0), 2)
             cv2.circle(f_draw, (int(mx), int(my)), 6, (0, 0, 255), -1)
 
-        # Circulo Azul = Predicao / Estimativa Kalman
         cv2.circle(f_draw, (int(ex), int(ey)), 6, (255, 0, 0), -1)
 
-        status_txt = "OCLUSAO (Predicao Pura)" if em_obstaculo else "RASTREAMENTO ATIVO"
-        cor_txt = (0, 0, 255) if em_obstaculo else (0, 255, 0)
+        status_txt = "OCLUSAO (Predicao Pura)" if em_oclusao else "RASTREAMENTO ATIVO"
+        cor_txt = (0, 0, 255) if em_oclusao else (0, 255, 0)
         cv2.putText(f_draw, f"Kalman: ({ex:.1f}, {ey:.1f}) | {status_txt}", (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.55, cor_txt, 2)
         cv2.putText(f_draw, "Vermelho: Medido | Azul: Kalman", (15, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
 
@@ -123,7 +137,6 @@ def executar_camshift_kalman(caminho_video):
 
     print(f"\nRastreamento concluido ({frame_idx} frames). Gerando graficos de trajetoria...")
 
-    # Plot 2D de trajetorias sobrepostas
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     ax1.plot(x_kal, y_kal, label="Kalman (Predito/Filtrado)", color="blue", linewidth=2.0)

@@ -14,9 +14,9 @@ def processar_video_hog(caminho_video, max_frames=60):
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-    # Dois cenarios conforme pedido no enunciado: rapido e preciso
     cenarios = [
         {"nome": "Cenario Preciso", "winStride": (4, 4), "padding": (8, 8), "scale": 1.03},
+        {"nome": "Cenario Balanceado", "winStride": (8, 8), "padding": (8, 8), "scale": 1.05},
         {"nome": "Cenario Rapido", "winStride": (16, 16), "padding": (8, 8), "scale": 1.10},
     ]
 
@@ -47,14 +47,12 @@ def processar_video_hog(caminho_video, max_frames=60):
             dt_ms = (time.perf_counter() - t0) * 1000
             tempos.append(dt_ms)
 
-            # NMS para filtrar sobreposicoes
             rects_list = [[x, y, w, h] for (x, y, w, h) in rects]
             weights_list = [float(w[0]) if isinstance(w, (list, np.ndarray)) else float(w) for w in weights] if len(weights) > 0 else []
             indices = cv2.dnn.NMSBoxes(rects_list, weights_list, score_threshold=0.15, nms_threshold=0.4) if rects_list else []
             n_det = len(indices) if len(indices) > 0 else 0
             total_det += n_det
 
-            # Desenha bounding boxes no frame
             f_draw = frame.copy()
             if len(indices) > 0:
                 for idx in np.array(indices).flatten():
@@ -67,7 +65,6 @@ def processar_video_hog(caminho_video, max_frames=60):
             if frame_exemplo is None or n_det >= 2:
                 frame_exemplo = f_draw
 
-            # Exibe o feed ao vivo
             cv2.imshow("Deteccao de Pedestres HOG", f_draw)
             if cv2.waitKey(1) & 0xFF in [ord("q"), 27]:
                 break
@@ -108,8 +105,7 @@ def main():
         print(f"{r['Cenario']:<20} | {r['winStride']:<10} | {r['scale']:<6} | {r['Det/Frame']:<10} | {r['Latencia']:<12} | {r['FPS']}")
     print("-" * 72)
 
-    # Plota e salva comparativo
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axs = plt.subplots(1, len(snapshots), figsize=(16, 5))
     for i, (nome, img) in enumerate(snapshots):
         axs[i].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         axs[i].set_title(f"{nome}\n({tabela[i]['Latencia']} — {tabela[i]['FPS']} FPS)", fontweight="bold")

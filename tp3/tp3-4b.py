@@ -99,17 +99,17 @@ def executar_finetuning_e_comparacao():
         tr_accs.append(t_acc)
         val_accs.append(v_acc)
         tr_losses.append(loss)
-        print(f"  Epoca {ep:02d}/10 | Acc Treino: {t_acc:5.2f}% | Acc Val: {v_acc:5.2f}% | Loss: {loss:.4f}")
+        print(
+            f"  Epoca {ep:02d}/10 | Acc Treino: {t_acc:5.2f}% | Acc Val: {v_acc:5.2f}% | Loss: {loss:.4f}"
+        )
 
     tempo_treino_total = (time.perf_counter() - t0_tr) + t_feat
     acc_ft = clf_ft.score(X_te_norm, y_te) * 100.0
 
-    # Salva o modelo fine-tuned
     caminho_modelo_ft = MODELOS_DIR / "mobilenetv2_finetuned.joblib"
     joblib.dump({"modelo": clf_ft, "scaler": scaler}, caminho_modelo_ft)
     tam_ft_mb = caminho_modelo_ft.stat().st_size / (1024 * 1024)
 
-    # 4. Avaliacao do Modelo Caffe Pre-Treinado Fixo no mesmo conjunto de teste
     print("\n4. Avaliando modelo Caffe pre-treinado fixo no conjunto de teste...")
     age_net, gender_net = obter_modelos_caffe_idade_genero()
 
@@ -127,7 +127,6 @@ def executar_finetuning_e_comparacao():
     fps_caffe = 1000.0 / max(1e-3, lat_caffe)
     tam_caffe_mb = 87.1
 
-    # Latencia do Modelo Fine-Tuned
     tempos_ft = []
     for _ in range(50):
         t_f0 = time.perf_counter()
@@ -140,25 +139,34 @@ def executar_finetuning_e_comparacao():
     cm_ft = confusion_matrix(y_te, y_pred_ft)
     cm_caffe = confusion_matrix(y_te, y_pred_caffe)
 
-    # Tabela comparativa exigida no enunciado
     print("\nTabela Comparativa — Modelo Fixo vs Fine-Tuning:")
-    print(f"{'Abordagem':<32} | {'Acuracia':<10} | {'Tempo Treino':<16} | {'Tamanho':<10} | {'Latencia':<12} | {'FPS'}")
+    print(
+        f"{'Abordagem':<32} | {'Acuracia':<10} | {'Tempo Treino':<16} | {'Tamanho':<10} | {'Latencia':<12} | {'FPS'}"
+    )
     print("-" * 96)
-    print(f"{'Caffe Pre-Treinado (Modelo Fixo)':<32} | {acc_caffe:>7.2f}%   | {'0.00 s (Zero-Shot)':<16} | {tam_caffe_mb:>6.1f} MB  | {lat_caffe:>7.2f} ms   | {fps_caffe:.1f}")
-    print(f"{'CNN Leve Fine-Tuned (MobileNet)':<32} | {acc_ft:>7.2f}%   | {tempo_treino_total:>7.2f} s (10 ep)  | {tam_ft_mb:>6.2f} MB  | {lat_ft:>7.2f} ms   | {fps_ft:.1f}")
+    print(
+        f"{'Caffe Pre-Treinado (Modelo Fixo)':<32} | {acc_caffe:>7.2f}%   | {'0.00 s (Zero-Shot)':<16} | {tam_caffe_mb:>6.1f} MB  | {lat_caffe:>7.2f} ms   | {fps_caffe:.1f}"
+    )
+    print(
+        f"{'CNN Leve Fine-Tuned (MobileNet)':<32} | {acc_ft:>7.2f}%   | {tempo_treino_total:>7.2f} s (10 ep)  | {tam_ft_mb:>6.2f} MB  | {lat_ft:>7.2f} ms   | {fps_ft:.1f}"
+    )
     print("-" * 96)
 
-    # 5. Quantizacao INT8
     pesos = obter_pesos_rede_neural().astype(np.float32)
     p_int8, _, _ = quantizar_pesos_int8(pesos)
-    print(f"\nQuantizacao INT8: Tamanho reduzido de {pesos.nbytes/1024:.1f} KB (FP32) para {p_int8.nbytes/1024:.1f} KB (INT8) — compressao de 4x.")
+    print(
+        f"\nQuantizacao INT8: Tamanho reduzido de {pesos.nbytes/1024:.1f} KB (FP32) para {p_int8.nbytes/1024:.1f} KB (INT8) — compressao de 4x."
+    )
 
-    # 6. Graficos: Curvas de Treino e Matrizes de Confusao
     fig, axs = plt.subplots(2, 2, figsize=(14, 9))
 
     axs[0, 0].plot(range(1, 11), tr_accs, "g-o", label="Treino")
-    axs[0, 0].plot(range(1, 11), val_accs, "orange", linestyle="--", marker="s", label="Validacao")
-    axs[0, 0].axhline(y=acc_caffe, color="purple", linestyle=":", label=f"Caffe ({acc_caffe:.1f}%)")
+    axs[0, 0].plot(
+        range(1, 11), val_accs, "orange", linestyle="--", marker="s", label="Validacao"
+    )
+    axs[0, 0].axhline(
+        y=acc_caffe, color="purple", linestyle=":", label=f"Caffe ({acc_caffe:.1f}%)"
+    )
     axs[0, 0].set_title("Curva de Acuracia — Fine-Tuning", fontweight="bold")
     axs[0, 0].set_xlabel("Epoca")
     axs[0, 0].set_ylabel("Acuracia (%)")
@@ -173,24 +181,44 @@ def executar_finetuning_e_comparacao():
     axs[0, 1].grid(True, linestyle="--", alpha=0.5)
 
     im1 = axs[1, 0].imshow(cm_ft, cmap="Blues")
-    axs[1, 0].set_title(f"Matriz de Confusao — Fine-Tuned ({acc_ft:.1f}%)", fontweight="bold")
+    axs[1, 0].set_title(
+        f"Matriz de Confusao — Fine-Tuned ({acc_ft:.1f}%)", fontweight="bold"
+    )
     axs[1, 0].set_xticks([0, 1])
     axs[1, 0].set_yticks([0, 1])
     axs[1, 0].set_xticklabels(["Masculino", "Feminino"])
     axs[1, 0].set_yticklabels(["Masculino", "Feminino"])
     for r in range(2):
         for c in range(2):
-            axs[1, 0].text(c, r, str(cm_ft[r, c]), ha="center", va="center", color="white" if cm_ft[r, c] > 50 else "black", fontweight="bold")
+            axs[1, 0].text(
+                c,
+                r,
+                str(cm_ft[r, c]),
+                ha="center",
+                va="center",
+                color="white" if cm_ft[r, c] > 50 else "black",
+                fontweight="bold",
+            )
 
     im2 = axs[1, 1].imshow(cm_caffe, cmap="Oranges")
-    axs[1, 1].set_title(f"Matriz de Confusao — Caffe Fixo ({acc_caffe:.1f}%)", fontweight="bold")
+    axs[1, 1].set_title(
+        f"Matriz de Confusao — Caffe Fixo ({acc_caffe:.1f}%)", fontweight="bold"
+    )
     axs[1, 1].set_xticks([0, 1])
     axs[1, 1].set_yticks([0, 1])
     axs[1, 1].set_xticklabels(["Masculino", "Feminino"])
     axs[1, 1].set_yticklabels(["Masculino", "Feminino"])
     for r in range(2):
         for c in range(2):
-            axs[1, 1].text(c, r, str(cm_caffe[r, c]), ha="center", va="center", color="white" if cm_caffe[r, c] > 50 else "black", fontweight="bold")
+            axs[1, 1].text(
+                c,
+                r,
+                str(cm_caffe[r, c]),
+                ha="center",
+                va="center",
+                color="white" if cm_caffe[r, c] > 50 else "black",
+                fontweight="bold",
+            )
 
     salvar_figura(SAIDAS_DIR / "tp3_4b_comparativo_modelos.png")
 

@@ -34,12 +34,10 @@ def treinar_e_comparar_modelos():
     print("Carregando dataset MNIST / Digitos...")
     X_tr, y_tr, X_te, y_te, nomes = carregar_dataset_digitos(limite_amostras=2500)
 
-    # Divisao treino / validacao
     n_val = int(0.2 * len(X_tr))
     X_val, y_val = X_tr[:n_val], y_tr[:n_val]
     X_train, y_train = X_tr[n_val:], y_tr[n_val:]
 
-    # Resumo das arquiteturas
     print("\nResumo das Arquiteturas:")
     print("1. MLP: Flatten (784) -> Dense(128, ReLU) -> Dense(64, ReLU) -> Dense(10, Softmax)")
     print("   Total de Parametros: ~109.386 pesos")
@@ -48,7 +46,6 @@ def treinar_e_comparar_modelos():
 
     epocas = 10
 
-    # 1. Treinamento do MLP
     print("\nTreinando Modelo MLP (10 epocas)...")
     mlp = MLPClassifier(hidden_layer_sizes=(128, 64), max_iter=1, warm_start=True, random_state=42, alpha=1e-3)
     X_tr_flat = X_train.reshape(len(X_train), -1)
@@ -63,12 +60,11 @@ def treinar_e_comparar_modelos():
         mlp_val_acc.append(mlp.score(X_val_flat, y_val))
         loss = float(mlp.loss_)
         mlp_tr_loss.append(loss)
-        mlp_val_loss.append(loss * (1.0 + ep * 0.03))  # Indicio de leve divergencia (overfitting)
+        mlp_val_loss.append(loss * (1.0 + ep * 0.03)) 
 
     tempo_epoca_mlp = (time.perf_counter() - t0_mlp) / epocas
     acc_mlp_te = mlp.score(X_te_flat, y_te)
 
-    # 2. Treinamento da CNN
     print("Treinando Modelo CNN (10 epocas)...")
     F_train = extrair_features_convolucionais(X_train)
     F_val = extrair_features_convolucionais(X_val)
@@ -88,7 +84,6 @@ def treinar_e_comparar_modelos():
     tempo_epoca_cnn = (time.perf_counter() - t0_cnn) / epocas
     acc_cnn_te = cnn.score(F_test, y_te)
 
-    # Tabela comparativa impressa no terminal
     print("\nTabela Comparativa — MLP vs CNN no MNIST:")
     print(f"{'Modelo':<10} | {'Parametros':<14} | {'Tempo/Epoca':<16} | {'Acuracia Teste'}")
     print("-" * 58)
@@ -96,7 +91,6 @@ def treinar_e_comparar_modelos():
     print(f"{'CNN':<10} | {'18.420':<14} | {tempo_epoca_cnn*1000:>7.2f} ms/epoca   | {acc_cnn_te*100:>6.2f}%")
     print("-" * 58)
 
-    # Graficos de Curvas de Treino (Acuracia e Loss)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     ep_axis = range(1, epocas + 1)

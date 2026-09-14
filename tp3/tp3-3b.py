@@ -32,21 +32,17 @@ from utils import (
 
 
 def gerar_ou_carregar_digitos_reais():
-    """Gera 10 imagens simulando fotografias reais de digitos 0-9 em papel."""
     X_tr, y_tr, _, _, _ = carregar_dataset_digitos(limite_amostras=500)
     amostras_reais = []
     labels_reais = list(range(10))
 
     for d in range(10):
-        # Seleciona uma imagem do digito
         idx = np.where(y_tr == d)[0][0]
         base_img = X_tr[idx]
 
-        # Simula papel fotografado: inverte fundo para branco, adiciona ruido e iluminacao nao uniforme
         papel = np.ones((80, 80), dtype=np.float32) * 0.95
         dig_patch = cv2.resize(base_img, (45, 45))
 
-        # Insere digito preto sobre fundo branco com leve inclinacao
         rot_mat = cv2.getRotationMatrix2D((22, 22), np.random.uniform(-10, 10), 1.0)
         dig_patch = cv2.warpAffine(dig_patch, rot_mat, (45, 45))
         papel[18:63, 18:63] -= dig_patch * 0.85
@@ -59,11 +55,9 @@ def gerar_ou_carregar_digitos_reais():
 
 
 def preprocessar_imagem_real(img_papel_gray):
-    # 1. Escala de cinza (ja em uint8) -> 2. Binarizacao Otsu (invertida para digito branco em fundo preto)
     blur = cv2.GaussianBlur(img_papel_gray, (3, 3), 0)
     _, otsu = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    # 3. Resize 28x28 -> 4. Normalizacao para [0, 1]
     res = cv2.resize(otsu, (28, 28), interpolation=cv2.INTER_AREA)
     norm = res.astype(np.float32) / 255.0
     return norm
@@ -75,10 +69,8 @@ def executar_experimento_domain_gap():
     X_train_limpo, y_train_limpo, X_test_limpo, y_test_limpo, _ = carregar_dataset_digitos(limite_amostras=2000)
     amostras_reais_img, y_reais = gerar_ou_carregar_digitos_reais()
 
-    # Pre-processa os 10 digitos reais com Otsu + resize + normalizacao
     X_reais_proc = np.array([preprocessar_imagem_real(img) for img in amostras_reais_img], dtype=np.float32)
 
-    # 2. Treina modelo baseline SEM Data Augmentation
     print("2. Treinando CNN baseline (SEM Data Augmentation)...")
     F_train_limpo = extrair_features_convolucionais(X_train_limpo)
     F_reais = extrair_features_convolucionais(X_reais_proc)
@@ -89,7 +81,6 @@ def executar_experimento_domain_gap():
     preds_base = clf_base.predict(F_reais)
     acc_base_real = accuracy_score(y_reais, preds_base) * 100.0
 
-    # 3. Treina modelo COM Data Augmentation (rotacao +-15 graus, zoom +-10%)
     print("3. Treinando CNN COM Data Augmentation...")
     X_aug, y_aug = [], []
     for img, lbl in zip(X_train_limpo, y_train_limpo):
@@ -112,11 +103,9 @@ def executar_experimento_domain_gap():
     print(f"Acuracia SEM Data Augmentation : {acc_base_real:.1f}%")
     print(f"Acuracia COM Data Augmentation : {acc_aug_real:.1f}% (Ganho de +{acc_aug_real - acc_base_real:.1f}%)")
 
-    # Salva modelo treinado
     caminho_modelo = MODELOS_DIR / "modelo_cnn_digitos.joblib"
     joblib.dump(clf_aug, caminho_modelo)
 
-    # 4. Plota painel com os 10 digitos reais, binarizacao e predicao sobreposta
     fig, axs = plt.subplots(2, 5, figsize=(15, 6))
     for i in range(10):
         r, c = i // 5, i % 5

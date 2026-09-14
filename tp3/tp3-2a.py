@@ -15,7 +15,6 @@ def executar_subtracao_e_camshift(caminho_video):
     if not ret:
         raise RuntimeError("Erro ao ler primeiro frame.")
 
-    # Janela inicial para CamShift (objeto vermelho ou pedestre)
     if "vtest" in str(caminho_video).lower():
         track_window = (380, 200, 60, 100)
     else:
@@ -40,17 +39,14 @@ def executar_subtracao_e_camshift(caminho_video):
             break
         frame_idx += 1
 
-        # 1. Subtracao MOG2
         t0 = time.perf_counter()
         mask_mog2 = sub_mog2.apply(frame)
         tempos_mog2.append((time.perf_counter() - t0) * 1000)
 
-        # 2. Subtracao KNN
         t1 = time.perf_counter()
         mask_knn = sub_knn.apply(frame)
         tempos_knn.append((time.perf_counter() - t1) * 1000)
 
-        # Contornos e contagem de objetos
         cnts_mog2, _ = cv2.findContours((mask_mog2 == 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         objs_mog2 = [c for c in cnts_mog2 if cv2.contourArea(c) > 100]
         contagens_mog2.append(len(objs_mog2))
@@ -59,7 +55,6 @@ def executar_subtracao_e_camshift(caminho_video):
         objs_knn = [c for c in cnts_knn if cv2.contourArea(c) > 100]
         contagens_knn.append(len(objs_knn))
 
-        # 3. CamShift
         t2 = time.perf_counter()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         m1 = cv2.inRange(hsv, np.array([0, 80, 40]), np.array([12, 255, 255]))
@@ -70,7 +65,6 @@ def executar_subtracao_e_camshift(caminho_video):
         rot_rect, track_window = cv2.CamShift(backproj, track_window, term_crit)
         tempos_cam.append((time.perf_counter() - t2) * 1000)
 
-        # Anotacao visual
         frame_anotado = frame.copy()
         for c in objs_mog2:
             x, y, w, h = cv2.boundingRect(c)

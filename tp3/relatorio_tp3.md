@@ -35,13 +35,17 @@ pip install -r requirements.txt
 
 **Resultados Quantitativos Obtidos:**
 - **Cenário Preciso (`winStride=(4, 4)`, `scale=1.03`):**
-  - Média de detecções: **3.93 pedestres por frame**
-  - Latência média de inferência: **406.30 ms**
-  - Taxa de quadros: **2.5 FPS**
+  - Média de detecções: **4.07 pedestres por frame**
+  - Latência média de inferência: **508.00 ms**
+  - Taxa de quadros: **2.0 FPS**
+- **Cenário Balanceado (`winStride=(8, 8)`, `scale=1.05`):**
+  - Média de detecções: **2.96 pedestres por frame**
+  - Latência média de inferência: **142.81 ms**
+  - Taxa de quadros: **7.0 FPS**
 - **Cenário Rápido (`winStride=(16, 16)`, `scale=1.10`):**
-  - Média de detecções: **0.13 pedestres por frame**
-  - Latência média de inferência: **36.76 ms**
-  - Taxa de quadros: **27.2 FPS**
+  - Média de detecções: **0.24 pedestres por frame**
+  - Latência média de inferência: **37.93 ms**
+  - Taxa de quadros: **26.4 FPS**
 
 #### Análise Técnica: Trade-offs de Hiperparâmetros em Vídeo Real
 1. **Passo da Janela (*winStride*):** Passos menores ($4\times4$) realizam uma varredura densa na imagem, detectando pedestres em diferentes profundidades e oclusões parciais, porém aumentando o custo computacional. Passos maiores ($16\times16$) aceleram a inferência em mais de $10\times$ ($\approx 27\text{ FPS}$), mas podem saltar pedestres menores.
@@ -152,12 +156,12 @@ pip install -r requirements.txt
   3. Inferência de gênero (`gender_net.caffemodel`) e idade (`age_net.caffemodel`).
   4. Sobreposição de rótulos e medição de throughput em vídeo (**$78.7\text{ FPS}$**).
 
-**Relatório Formal de Validação em 5 Rostos Distintos:**
-- **Indivíduo #01 (Face 0):** Gênero Predito: **Feminino (99.2% de confiança)** | Faixa Etária: **(38-43) com 55.8% de confiança**
-- **Indivíduo #02 (Face 20):** Gênero Predito: **Feminino (91.3% de confiança)** | Faixa Etária: **(38-43) com 25.1% de confiança**
-- **Indivíduo #03 (Face 50):** Gênero Predito: **Masculino (99.0% de confiança)** | Faixa Etária: **(38-43) com 89.1% de confiança**
-- **Indivíduo #04 (Face 100):** Gênero Predito: **Masculino (60.1% de confiança)** | Faixa Etária: **(25-32) com 99.2% de confiança**
-- **Indivíduo #05 (Face 150):** Gênero Predito: **Masculino (97.5% de confiança)** | Faixa Etária: **(0-2) com 39.6% de confiança**
+**Relatório Formal de Validação em 5 Rostos Distintos do Vídeo:**
+- **Indivíduo #01 (Frame 75):** Gênero Predito: **Masculino (99.8% de confiança)** | Faixa Etária: **(8-12) com 59.3% de confiança**
+- **Indivíduo #02 (Frame 279):** Gênero Predito: **Masculino (93.9% de confiança)** | Faixa Etária: **(38-43) com 56.6% de confiança**
+- **Indivíduo #03 (Frame 280):** Gênero Predito: **Feminino (99.8% de confiança)** | Faixa Etária: **(15-20) com 79.1% de confiança**
+- **Indivíduo #04 (Frame 478):** Gênero Predito: **Masculino (83.3% de confiança)** | Faixa Etária: **(25-32) com 89.4% de confiança**
+- **Indivíduo #05 (Frame 668):** Gênero Predito: **Feminino (100.0% de confiança)** | Faixa Etária: **(25-32) com 89.5% de confiança**
 
 ---
 

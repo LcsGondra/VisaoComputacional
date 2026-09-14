@@ -29,12 +29,14 @@ def ensure_dirs():
         p.mkdir(parents=True, exist_ok=True)
 
 
-def salvar_figura(caminho, dpi=200, fechar=True):
+def salvar_figura(caminho, dpi=200, mostrar=True, fechar=True):
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(caminho, dpi=dpi, bbox_inches="tight")
     print(f"[+] Gráfico salvo em: {caminho.name}")
+    if mostrar:
+        plt.show()
     if fechar:
         plt.close()
 
