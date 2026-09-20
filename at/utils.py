@@ -1,24 +1,22 @@
-"""
-Módulo de Utilitários Compartilhados — Assessment Test (AT) de Visão Computacional
-
-Fornece infraestrutura unificada para:
-- Gerenciamento de diretórios e salvamento padronizado de figuras (dpi=200).
-- Download e cache local seguro de modelos de Deep Learning (SqueezeNet, YOLO, SSD, FCN).
-- Geração geométrica de imagens calibradas de xadrez (7x6 cantos internos) em ângulos 3D variados.
-- Geração e disponibilização de datasets de classificação, cenas urbanas e frames do pipeline integrativo.
-- Algoritmo de rastreamento de múltiplos objetos por IoU com IDs persistentes, trilhas e contagem.
-"""
+# Módulo de Utilitários Compartilhados — Assessment Test (AT) de Visão Computacional
+#
+# Fornece infraestrutura unificada utilizando EXCLUSIVAMENTE bibliotecas consagradas
+# (OpenCV, scikit-image, scikit-learn, OpenCV Samples Dataset, etc.) e dados reais:
+# - Calibração com 18 imagens reais do dataset oficial de calibração do OpenCV (left/right series).
+# - Classificação com 10 imagens fotográficas reais extraídas de `skimage.data` e do repositório.
+# - Detecção e Rastreamento sobre o vídeo oficial de vigilância do OpenCV (`vtest.avi`).
+# - Segmentação semântica sobre 5 cenas externas reais (frames de vigilância, fotos do OpenCV e skimage).
+# - Modelos pré-treinados oficiais (SqueezeNet Caffe, YOLOv4-tiny Darknet, SSD MobileNet v2 TF, FCN-ResNet50 ONNX).
 
 from collections import deque
 from pathlib import Path
-import csv
-import math
 import os
 import time
 import urllib.request
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import skimage.data
 
 # Definição de diretórios estruturados
 BASE_DIR = Path(__file__).resolve().parent
@@ -30,8 +28,13 @@ CLASS_DIR = DADOS_DIR / "classificacao"
 TESTE_DIR = DADOS_DIR / "teste"
 CALIB_FILE = DADOS_DIR / "calibracao_camera.npz"
 
-# Paleta de cores e rótulos
-COCO_CLASSES_DETECCAO = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck"]
+# Caminhos de dados pré-existentes na disciplina
+ROOT_PROJECT = BASE_DIR.parent.parent
+VIDEO_VTEST_PATH = BASE_DIR.parent / "tp3" / "dados" / "vtest.avi"
+VIDEO_PEDESTRES_PATH = ROOT_PROJECT / "AulavisaoComputacional" / "data" / "pedestres.mp4"
+PESSOA_JPG_PATH = ROOT_PROJECT / "AulavisaoComputacional" / "pessoa.jpg"
+IMAGENS_DIR = BASE_DIR.parent / "Imagens"
+
 PALETA_CORES = {
     "person": (255, 128, 0),      # Laranja em BGR
     "car": (0, 200, 255),         # Amarelo/Dourado
@@ -43,13 +46,13 @@ PALETA_CORES = {
 
 
 def ensure_dirs():
-    """Garante a existência de todos os diretórios do projeto."""
+    # Garante a existência de todos os diretórios do projeto.
     for p in (DADOS_DIR, SAIDAS_DIR, MODELOS_DIR, CALIB_DIR, CLASS_DIR, TESTE_DIR):
         p.mkdir(parents=True, exist_ok=True)
 
 
 def salvar_figura(caminho, dpi=200, mostrar=False, fechar=True):
-    """Salva a figura atual do matplotlib com layout ajustado e alta resolução."""
+    # Salva a figura atual do matplotlib com layout ajustado e alta resolução.
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
@@ -65,7 +68,7 @@ def salvar_figura(caminho, dpi=200, mostrar=False, fechar=True):
 
 
 def baixar_arquivo_se_necessario(caminho_local, url, descricao="arquivo"):
-    """Faz download de arquivo da web com headers apropriados se ainda não existir localmente."""
+    # Faz download de arquivo da web com headers apropriados se ainda não existir localmente.
     caminho_local = Path(caminho_local)
     caminho_local.parent.mkdir(parents=True, exist_ok=True)
 
@@ -76,14 +79,11 @@ def baixar_arquivo_se_necessario(caminho_local, url, descricao="arquivo"):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=60) as resp, open(caminho_local, "wb") as f:
-            tamanho = resp.length or 0
-            baixado = 0
             bloco = 1024 * 128
             while True:
                 buffer = resp.read(bloco)
                 if not buffer:
                     break
-                baixado += len(buffer)
                 f.write(buffer)
         print(f"    [OK] Download concluído ({caminho_local.stat().st_size / (1024*1024):.2f} MB)")
         return caminho_local
@@ -93,8 +93,12 @@ def baixar_arquivo_se_necessario(caminho_local, url, descricao="arquivo"):
         raise RuntimeError(f"Falha ao baixar {descricao} de {url}: {e}")
 
 
+# ==============================================================================
+# CARREGADORES DE MODELOS OFICIAIS DEEP LEARNING (OPENCV DNN)
+# ==============================================================================
+
 def obter_labels_imagenet():
-    """Retorna lista de rótulos do ImageNet (1000 classes)."""
+    # Retorna lista de rótulos do ImageNet (1000 classes).
     ensure_dirs()
     caminho = MODELOS_DIR / "imagenet_labels.txt"
     url = "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
@@ -105,7 +109,7 @@ def obter_labels_imagenet():
 
 
 def obter_modelo_squeezenet():
-    """Baixa e carrega o modelo SqueezeNet v1.1 Caffe pré-treinado no ImageNet."""
+    # Baixa e carrega o modelo SqueezeNet v1.1 Caffe pré-treinado no ImageNet.
     ensure_dirs()
     proto = MODELOS_DIR / "squeezenet_v1.1.prototxt"
     caffemodel = MODELOS_DIR / "squeezenet_v1.1.caffemodel"
@@ -123,7 +127,7 @@ def obter_modelo_squeezenet():
 
 
 def obter_modelo_yolo_tiny():
-    """Baixa e carrega o YOLOv4-tiny via OpenCV DNN (Darknet)."""
+    # Baixa e carrega o YOLOv4-tiny via OpenCV DNN (Darknet).
     ensure_dirs()
     cfg = MODELOS_DIR / "yolov4-tiny.cfg"
     weights = MODELOS_DIR / "yolov4-tiny.weights"
@@ -147,7 +151,7 @@ def obter_modelo_yolo_tiny():
 
 
 def obter_modelo_ssd_mobilenet():
-    """Baixa e carrega o SSD MobileNet v2 via OpenCV DNN (TensorFlow)."""
+    # Baixa e carrega o SSD MobileNet v2 via OpenCV DNN (TensorFlow).
     ensure_dirs()
     pbtxt = MODELOS_DIR / "ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
     pb = MODELOS_DIR / "ssd_mobilenet_v2_coco_2018_03_29.pb"
@@ -178,7 +182,7 @@ def obter_modelo_ssd_mobilenet():
 
 
 def obter_modelo_fcn_segmentacao():
-    """Baixa e carrega o modelo FCN-ResNet50 ONNX para segmentação semântica."""
+    # Baixa e carrega o modelo FCN-ResNet50 ONNX para segmentação semântica.
     ensure_dirs()
     onnx_path = MODELOS_DIR / "fcn-resnet50-12.onnx"
     url_onnx = "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/fcn/model/fcn-resnet50-12.onnx"
@@ -192,407 +196,168 @@ def obter_modelo_fcn_segmentacao():
 
 
 # ==============================================================================
-# GERAÇÃO DE DADOS SINTÉTICOS / CIENTÍFICOS PARA CALIBRAÇÃO E PIPELINE
+# DATASETS 100% REAIS EXTRAÍDOS DE LIBS E BENCHMARKS OFICIAIS (SEM IA GERATIVA)
 # ==============================================================================
 
-def gerar_dataset_calibracao(num_imagens=18, pattern_size=(7, 6), square_size=30, img_size=(640, 480)):
-    """
-    Gera conjunto de imagens calibradas de um tabuleiro de xadrez em 3D.
-    Simula variações realistas de rotação (pitch, yaw, roll), translação (distância e deslocamento)
-    e distorção de lente (k1, k2) para calibração com ground truth geométrico exato.
-    """
+def obter_dataset_calibracao_opencv(num_imagens=18):
+    # Obtém as 18 imagens fotográficas reais do dataset oficial de calibração de câmera do OpenCV:
+    # left01 a left14 (exceto left10 inexistente) e right01 a right05.
+    # Padrão: 9x6 cantos internos de tabuleiro de xadrez em ângulos e distâncias variados.
     ensure_dirs()
-    existentes = sorted(list(CALIB_DIR.glob("calib_*.png")))
-    if len(existentes) >= num_imagens:
-        return existentes
-
-    cols, rows = pattern_size
-    w_px = (cols + 1) * square_size
-    h_px = (rows + 1) * square_size
-
-    # Cria textura básica do tabuleiro
-    tabuleiro = np.zeros((h_px, w_px), dtype=np.uint8)
-    for r in range(rows + 1):
-        for c in range(cols + 1):
-            if (r + c) % 2 == 0:
-                tabuleiro[r * square_size:(r + 1) * square_size, c * square_size:(c + 1) * square_size] = 255
-
-    # Matriz intrínseca sintética de câmera de referência
-    fx = fy = 600.0
-    cx, cy = img_size[0] / 2.0, img_size[1] / 2.0
-    K_ref = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]], dtype=np.float64)
-    dist_ref = np.array([-0.18, 0.06, 0.001, -0.001, 0.0], dtype=np.float64)
-
-    # Vértices 3D do plano do tabuleiro
-    corners_3d = np.array([
-        [-w_px / 2, -h_px / 2, 0],
-        [w_px / 2, -h_px / 2, 0],
-        [w_px / 2, h_px / 2, 0],
-        [-w_px / 2, h_px / 2, 0],
-    ], dtype=np.float64)
+    nomes_opencv = [
+        "left01.jpg", "left02.jpg", "left03.jpg", "left04.jpg", "left05.jpg",
+        "left06.jpg", "left07.jpg", "left08.jpg", "left09.jpg", "left11.jpg",
+        "left12.jpg", "left13.jpg", "left14.jpg", "right01.jpg", "right02.jpg",
+        "right03.jpg", "right04.jpg", "right05.jpg"
+    ][:num_imagens]
 
     caminhos = []
-    np.random.seed(42)
+    base_url = "https://raw.githubusercontent.com/opencv/opencv/master/samples/data/"
+    for nome in nomes_opencv:
+        caminho_local = CALIB_DIR / nome
+        url = base_url + nome
+        baixar_arquivo_se_necessario(caminho_local, url, f"foto calibração OpenCV ({nome})")
+        caminhos.append(caminho_local)
 
-    for i in range(num_imagens):
-        # Variações controladas de ângulo e profundidade
-        pitch = np.radians(np.random.uniform(-25, 25))
-        yaw = np.radians(np.random.uniform(-28, 28))
-        roll = np.radians(np.random.uniform(-18, 18))
-        tz = np.random.uniform(550, 780)
-        tx = np.random.uniform(-110, 110)
-        ty = np.random.uniform(-80, 80)
-
-        # Matrizes de rotação 3D
-        Rx = np.array([[1, 0, 0], [0, np.cos(pitch), -np.sin(pitch)], [0, np.sin(pitch), np.cos(pitch)]])
-        Ry = np.array([[np.cos(yaw), 0, np.sin(yaw)], [0, 1, 0], [-np.sin(yaw), 0, np.cos(yaw)]])
-        Rz = np.array([[np.cos(roll), -np.sin(roll), 0], [np.sin(roll), np.cos(roll), 0], [0, 0, 1]])
-        R = Rz @ Ry @ Rx
-        rvec, _ = cv2.Rodrigues(R)
-        tvec = np.array([[tx], [ty], [tz]], dtype=np.float64)
-
-        # Projeta os 4 cantos do plano usando a câmera com distorção
-        pts_2d, _ = cv2.projectPoints(corners_3d, rvec, tvec, K_ref, dist_ref)
-        pts_2d = pts_2d.reshape(-1, 2).astype(np.float32)
-
-        src_pts = np.array([[0, 0], [w_px - 1, 0], [w_px - 1, h_px - 1], [0, h_px - 1]], dtype=np.float32)
-        H, _ = cv2.findHomography(src_pts, pts_2d)
-
-        # Fundo de bancada com textura suave
-        fundo = np.full((img_size[1], img_size[0]), int(np.random.uniform(180, 220)), dtype=np.uint8)
-        # Adiciona leve ruído gaussiano para realismo sensorial
-        ruido = np.random.normal(0, 4, fundo.shape).astype(np.int16)
-        fundo = np.clip(fundo.astype(np.int16) + ruido, 0, 255).astype(np.uint8)
-
-        warped = cv2.warpPerspective(tabuleiro, H, img_size, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
-        mask = cv2.warpPerspective(np.ones_like(tabuleiro) * 255, H, img_size, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
-
-        frame = np.where(mask > 128, warped, fundo)
-        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-
-        caminho = CALIB_DIR / f"calib_{i+1:02d}.png"
-        cv2.imwrite(str(caminho), frame_bgr)
-        caminhos.append(caminho)
-
-    print(f"[+] {len(caminhos)} imagens de calibração geradas em: {CALIB_DIR.name}/")
+    print(f"[+] {len(caminhos)} fotos reais do dataset oficial de calibração OpenCV prontas em: {CALIB_DIR.name}/")
     return caminhos
 
 
-def obter_dataset_classificacao(num_imagens=10):
-    """
-    Gera/retorna 10 imagens de categorias distintas para teste de classificação OpenCV DNN.
-    """
+def obter_dataset_classificacao_real(num_imagens=10):
+    # Gera/retorna 10 imagens fotográficas reais extraídas de bibliotecas consolidadas:
+    # - scikit-image (skimage.data): coffee, cat, astronaut, camera, rocket, coins, clock, brick, gravel
+    # - Imagens reais locais da disciplina (pessoa.jpg, stock_img_aluno.jpg)
     ensure_dirs()
-    existentes = sorted(list(CLASS_DIR.glob("img_*.png")))
+    existentes = sorted(list(CLASS_DIR.glob("real_*.png")))
     if len(existentes) >= num_imagens:
         return existentes
 
-    categorias = [
-        ("caneca", (255, 100, 100), "Caneca de cafe ceramica"),
-        ("bola", (60, 220, 60), "Bola esportiva de tenis"),
-        ("carro", (50, 100, 240), "Automovel sedan urbano"),
-        ("livro", (200, 60, 180), "Livro de engenharia capa dura"),
-        ("garrafa", (240, 200, 50), "Garrafa de agua mineral"),
-        ("teclado", (120, 120, 120), "Teclado de computador mecanico"),
-        ("robo", (230, 140, 40), "Robo movel autonomo rover"),
-        ("caixa", (180, 130, 90), "Caixa de papelao embalagem"),
-        ("capacete", (40, 200, 200), "Capacete de seguranca EPI"),
-        ("planta", (40, 160, 40), "Vaso de planta ornamental"),
+    print("[+] Carregando 10 fotografias reais de bibliotecas (skimage.data e fotos da disciplina)...")
+    amostras = [
+        ("01_coffee", skimage.data.coffee()),
+        ("02_gato", skimage.data.chelsea()),
+        ("03_astronauta", skimage.data.astronaut()),
+        ("04_fotografo", cv2.cvtColor(skimage.data.camera(), cv2.COLOR_GRAY2BGR)),
+        ("05_foguete", skimage.data.rocket()),
+        ("06_moedas", cv2.cvtColor(skimage.data.coins(), cv2.COLOR_GRAY2BGR)),
+        ("07_relogio", cv2.cvtColor(skimage.data.clock(), cv2.COLOR_GRAY2BGR)),
+        ("08_tijolo", cv2.cvtColor(skimage.data.brick(), cv2.COLOR_GRAY2BGR)),
+        ("09_pedregulhos", cv2.cvtColor(skimage.data.gravel(), cv2.COLOR_GRAY2BGR)),
     ]
 
+    # Amostra 10: Foto real de pessoa da disciplina
+    if PESSOA_JPG_PATH.exists():
+        img_p = cv2.imread(str(PESSOA_JPG_PATH))
+        amostras.append(("10_pessoa", img_p))
+    else:
+        amostras.append(("10_pessoa", cv2.cvtColor(skimage.data.grass(), cv2.COLOR_GRAY2BGR)))
+
     caminhos = []
-    w, h = 480, 360
-    for i, (nome, cor, desc) in enumerate(categorias[:num_imagens]):
-        img = np.full((h, w, 3), (240, 240, 245), dtype=np.uint8)
-        # Fundo e sombras
-        cv2.ellipse(img, (240, 280), (140, 30), 0, 0, 360, (200, 200, 205), -1)
-
-        # Geometria simbólica detalhada com texturas
-        if nome == "caneca":
-            cv2.rectangle(img, (180, 130), (280, 270), cor, -1)
-            cv2.ellipse(img, (230, 130), (50, 18), 0, 0, 360, (255, 160, 160), -1)
-            cv2.ellipse(img, (290, 200), (28, 45), 0, 0, 360, cor, 12)
-        elif nome == "bola":
-            cv2.circle(img, (240, 200), 75, cor, -1)
-            cv2.circle(img, (215, 175), 18, (255, 255, 255), -1)
-            cv2.ellipse(img, (240, 200), (74, 30), 45, 0, 360, (40, 160, 40), 4)
-        elif nome == "carro":
-            cv2.rectangle(img, (120, 180), (360, 260), cor, -1)
-            cv2.rectangle(img, (170, 125), (310, 180), cor, -1)
-            cv2.circle(img, (170, 260), 28, (30, 30, 30), -1)
-            cv2.circle(img, (310, 260), 28, (30, 30, 30), -1)
-            cv2.circle(img, (170, 260), 12, (180, 180, 180), -1)
-            cv2.circle(img, (310, 260), 12, (180, 180, 180), -1)
+    for nome, img in amostras[:num_imagens]:
+        caminho = CLASS_DIR / f"real_{nome}.png"
+        # Garante conversão correta RGB -> BGR ao salvar skimage data
+        if nome != "10_pessoa" and len(img.shape) == 3:
+            img_save = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         else:
-            cv2.rectangle(img, (150, 120), (330, 260), cor, -1)
-            cv2.rectangle(img, (170, 140), (310, 240), (255, 255, 255), 2)
-            cv2.circle(img, (240, 190), 30, (cor[0]//2, cor[1]//2, cor[2]//2), -1)
-
-        # Anotação descritiva
-        cv2.putText(img, f"Objeto: {nome.upper()}", (30, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (40, 40, 40), 2)
-        cv2.putText(img, desc, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (80, 80, 80), 1)
-
-        caminho = CLASS_DIR / f"img_{i+1:02d}_{nome}.png"
-        cv2.imwrite(str(caminho), img)
+            img_save = img
+        cv2.imwrite(str(caminho), img_save)
         caminhos.append(caminho)
 
     return caminhos
 
 
-def obter_frame_pipeline():
-    """
-    Cria frame completo para validação do pipeline integrativo sequencial (Ex 2B):
-    Contém região vermelha para HSV, textura complexa para ORB, pedestre para HOG e rótulo.
-    """
+def obter_frame_pipeline_real():
+    # Retorna fotografia real para o pipeline integrativo (pessoa.jpg da disciplina ou vtest frame).
     ensure_dirs()
-    caminho = TESTE_DIR / "frame_pipeline_integrado.png"
-    if caminho.exists():
-        return cv2.imread(str(caminho)), caminho
-
-    w, h = 640, 480
-    frame = np.full((h, w, 3), (230, 235, 240), dtype=np.uint8)
-
-    # 1. Pista e calçada
-    cv2.rectangle(frame, (0, 300), (w, h), (90, 90, 95), -1)
-    cv2.rectangle(frame, (0, 240), (w, 300), (140, 140, 145), -1)
-
-    # 2. ROI Vermelha marcante para segmentação HSV (TP1)
-    cv2.rectangle(frame, (80, 110), (230, 250), (30, 30, 220), -1)
-    cv2.rectangle(frame, (95, 125), (215, 235), (255, 255, 255), 2)
-
-    # 3. Textura com detalhes ricos para extração de keypoints ORB (TP2)
-    for x in range(105, 210, 20):
-        for y in range(135, 225, 20):
-            cv2.circle(frame, (x, y), 4, (0, 0, 0), -1)
-            cv2.line(frame, (x - 6, y), (x + 6, y), (255, 255, 0), 1)
-
-    # 4. Silhueta de pedestre para detecção HOG+SVM / Haar (TP3)
-    px, py = 450, 260
-    # Cabeça
-    cv2.circle(frame, (px, py - 60), 18, (40, 40, 40), -1)
-    # Tronco
-    cv2.rectangle(frame, (px - 16, py - 40), (px + 16, py + 10), (40, 40, 40), -1)
-    # Pernas
-    cv2.line(frame, (px - 10, py + 10), (px - 12, py + 60), (40, 40, 40), 6)
-    cv2.line(frame, (px + 10, py + 10), (px + 12, py + 60), (40, 40, 40), 6)
-
-    cv2.putText(frame, "Cena de Teste Integrada: HSV + ORB + HOG + DNN", (25, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (20, 20, 20), 2)
-    cv2.imwrite(str(caminho), frame)
-    return frame, caminho
+    if PESSOA_JPG_PATH.exists():
+        return cv2.imread(str(PESSOA_JPG_PATH)), PESSOA_JPG_PATH
+    # Fallback: astronaut do skimage
+    img_astro = cv2.cvtColor(skimage.data.astronaut(), cv2.COLOR_RGB2BGR)
+    caminho = TESTE_DIR / "real_astronaut_pipeline.png"
+    cv2.imwrite(str(caminho), img_astro)
+    return img_astro, caminho
 
 
-def gerar_video_transito(caminho_video, n_frames=90, fps=20, size=(800, 450)):
-    """
-    Gera um vídeo urbano com pedestres, ciclistas e veículos em movimento contínuo
-    para benchmark e rastreamento em tempo real (Ex 3A e 3B).
-    """
-    caminho_video = Path(caminho_video)
-    caminho_video.parent.mkdir(parents=True, exist_ok=True)
-    if caminho_video.exists() and caminho_video.stat().st_size > 5000:
-        return str(caminho_video)
+# Alias para compatibilidade
+obter_frame_pipeline = obter_frame_pipeline_real
 
-    w, h = size
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(str(caminho_video), fourcc, fps, (w, h))
 
-    for f in range(n_frames):
-        frame = np.full((h, w, 3), (220, 225, 230), dtype=np.uint8)
+def obter_video_pedestres():
+    # Retorna o caminho para o vídeo real de vigilância de pedestres (vtest.avi oficial do OpenCV ou pedestres.mp4).
+    ensure_dirs()
+    if VIDEO_VTEST_PATH.exists():
+        return str(VIDEO_VTEST_PATH)
+    if VIDEO_PEDESTRES_PATH.exists():
+        return str(VIDEO_PEDESTRES_PATH)
 
-        # Cenário urbano (rua, calçada, prédios)
-        cv2.rectangle(frame, (0, 0), (w, 140), (190, 170, 150), -1)  # Prédios
-        cv2.rectangle(frame, (0, 140), (w, 200), (130, 130, 135), -1)  # Calçada superior
-        cv2.rectangle(frame, (0, 200), (w, 400), (60, 60, 65), -1)    # Pista de rolamento
-        cv2.rectangle(frame, (0, 400), (w, h), (130, 130, 135), -1)   # Calçada inferior
+    # Download do vtest.avi oficial do OpenCV se necessário
+    caminho_local = DADOS_DIR / "vtest.avi"
+    url = "https://raw.githubusercontent.com/opencv/opencv/master/samples/data/vtest.avi"
+    baixar_arquivo_se_necessario(caminho_local, url, "vídeo benchmark oficial vtest.avi (~8.1MB)")
+    return str(caminho_local)
 
-        # Faixas de trânsito
-        for x in range(0, w, 80):
-            cv2.line(frame, (x, 300), (x + 40, 300), (255, 255, 255), 3)
 
-        # Pedestre 1 (caminhando para a direita na calçada superior)
-        x_ped1 = int(50 + f * 5.0) % (w + 60) - 30
-        y_ped1 = 175
-        cv2.circle(frame, (x_ped1, y_ped1 - 25), 10, PALETA_CORES["person"], -1)
-        cv2.rectangle(frame, (x_ped1 - 10, y_ped1 - 15), (x_ped1 + 10, y_ped1 + 15), PALETA_CORES["person"], -1)
-        cv2.line(frame, (x_ped1 - 5, y_ped1 + 15), (x_ped1 - 8, y_ped1 + 35), PALETA_CORES["person"], 4)
-        cv2.line(frame, (x_ped1 + 5, y_ped1 + 15), (x_ped1 + 8, y_ped1 + 35), PALETA_CORES["person"], 4)
+def obter_cenas_externas_reais(num_cenas=5):
+    # Extrai/prepara 5 imagens de cenas externas reais a partir de vídeos reais e OpenCV samples:
+    # 1. Frame real de trânsito de pedestres (pedestres.mp4)
+    # 2. Frame real de vigilância em praça (vtest.avi)
+    # 3. Fotografia externa real de campo (skimage.data.camera)
+    # 4. Fotografia externa real de arquitetura (building.jpg do OpenCV Samples)
+    # 5. Fotografia externa real de rua/casa (home.jpg do OpenCV Samples)
+    ensure_dirs()
+    caminhos = []
 
-        # Carro 1 (trafegando para a esquerda na faixa 1)
-        x_car1 = int(w + 100 - f * 8.5) % (w + 200) - 100
-        y_car1 = 250
-        cv2.rectangle(frame, (x_car1 - 60, y_car1 - 22), (x_car1 + 60, y_car1 + 22), PALETA_CORES["car"], -1)
-        cv2.rectangle(frame, (x_car1 - 35, y_car1 - 40), (x_car1 + 25, y_car1 - 22), (240, 220, 180), -1)
-        cv2.circle(frame, (x_car1 - 40, y_car1 + 22), 12, (20, 20, 20), -1)
-        cv2.circle(frame, (x_car1 + 40, y_car1 + 22), 12, (20, 20, 20), -1)
+    # 1. Frame de pedestres.mp4
+    p1 = TESTE_DIR / "real_cena_01_rua_pedestres.png"
+    if not p1.exists():
+        if VIDEO_PEDESTRES_PATH.exists():
+            cap = cv2.VideoCapture(str(VIDEO_PEDESTRES_PATH))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 60)
+            ret, f = cap.read()
+            cap.release()
+            if ret:
+                cv2.imwrite(str(p1), f)
+    if p1.exists():
+        caminhos.append(p1)
 
-        # Carro 2 (trafegando para a direita na faixa 2)
-        x_car2 = int(-50 + f * 9.0) % (w + 220) - 100
-        y_car2 = 350
-        cv2.rectangle(frame, (x_car2 - 65, y_car2 - 25), (x_car2 + 65, y_car2 + 25), (40, 60, 220), -1)
-        cv2.rectangle(frame, (x_car2 - 40, y_car2 - 45), (x_car2 + 30, y_car2 - 25), (200, 220, 255), -1)
-        cv2.circle(frame, (x_car2 - 45, y_car2 + 25), 14, (20, 20, 20), -1)
-        cv2.circle(frame, (x_car2 + 45, y_car2 + 25), 14, (20, 20, 20), -1)
+    # 2. Frame de vtest.avi
+    p2 = TESTE_DIR / "real_cena_02_parque_vtest.png"
+    if not p2.exists():
+        vid_p = obter_video_pedestres()
+        cap = cv2.VideoCapture(vid_p)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 100)
+        ret, f = cap.read()
+        cap.release()
+        if ret:
+            cv2.imwrite(str(p2), f)
+    if p2.exists():
+        caminhos.append(p2)
 
-        # Ciclista (caminhando na diagonal ou calçada)
-        x_bike = int(w + 50 - f * 4.5) % (w + 120) - 40
-        y_bike = 415
-        cv2.circle(frame, (x_bike - 15, y_bike + 10), 12, (10, 10, 10), 2)
-        cv2.circle(frame, (x_bike + 15, y_bike + 10), 12, (10, 10, 10), 2)
-        cv2.circle(frame, (x_bike, y_bike - 20), 8, PALETA_CORES["bicycle"], -1)
+    # 3. skimage.data.camera (Fotógrafo externo real)
+    p3 = TESTE_DIR / "real_cena_03_fotografo_campo.png"
+    if not p3.exists():
+        cam = skimage.data.camera()
+        cv2.imwrite(str(p3), cam)
+    caminhos.append(p3)
 
-        writer.write(frame)
+    # 4. building.jpg do OpenCV
+    p4 = TESTE_DIR / "real_cena_04_building_opencv.jpg"
+    url_b = "https://raw.githubusercontent.com/opencv/opencv/master/samples/data/building.jpg"
+    baixar_arquivo_se_necessario(p4, url_b, "OpenCV sample building.jpg")
+    caminhos.append(p4)
 
-    writer.release()
-    print(f"[+] Vídeo de trânsito urbano sintetizado em: {caminho_video.name}")
-    return str(caminho_video)
+    # 5. home.jpg do OpenCV
+    p5 = TESTE_DIR / "real_cena_05_home_opencv.jpg"
+    url_h = "https://raw.githubusercontent.com/opencv/opencv/master/samples/data/home.jpg"
+    baixar_arquivo_se_necessario(p5, url_h, "OpenCV sample home.jpg")
+    caminhos.append(p5)
+
+    return caminhos[:num_cenas]
 
 
 # ==============================================================================
-# RASTREADOR DE OBJETOS COM PERSISTÊNCIA POR IOU (EXERCÍCIO 3B)
+# DETECTORES E RASTREADOR POR IOU
 # ==============================================================================
-
-def calcular_iou(box_a, box_b):
-    """Calcula Intersection over Union (IoU) entre duas caixas no formato [x1, y1, x2, y2]."""
-    ax1, ay1, ax2, ay2 = box_a
-    bx1, by1, bx2, by2 = box_b
-
-    ix1, iy1 = max(ax1, bx1), max(ay1, by1)
-    ix2, iy2 = min(ax2, bx2), min(ay2, by2)
-    iw, ih = max(0, ix2 - ix1), max(0, iy2 - iy1)
-    inter = iw * ih
-
-    area_a = max(0, ax2 - ax1) * max(0, ay2 - ay1)
-    area_b = max(0, bx2 - bx1) * max(0, by2 - by1)
-    union = area_a + area_b - inter
-
-    return 0.0 if union <= 0 else inter / union
-
-
-class IoUTracker:
-    """
-    Rastreador de objetos com associação por IoU (Intersection over Union).
-    Gerencia identificadores únicos (IDs persistentes), mantém trilha dos últimos 30 frames,
-    detecta cruzamentos de linha virtual (entradas e saídas) e contabiliza trocas de ID (ID switches).
-    """
-    def __init__(self, iou_thresh=0.30, max_missing=10, trail_len=30, line_x=400):
-        self.iou_thresh = iou_thresh
-        self.max_missing = max_missing
-        self.trail_len = trail_len
-        self.line_x = line_x
-
-        self.next_id = 1
-        self.tracks = {}      # id -> {'bbox', 'cls', 'conf', 'missing', 'last_x'}
-        self.trails = {}      # id -> deque de (cx, cy)
-        self.crossed_in = 0   # Da esquerda para a direita
-        self.crossed_out = 0  # Da direita para a esquerda
-        self.id_switches = 0
-        self.total_tracks_criadas = 0
-
-    def update(self, detections):
-        """
-        Recebe lista de detecções: [{'bbox': [x1, y1, x2, y2], 'cls': 'car', 'conf': 0.85}, ...]
-        Retorna lista de objetos rastreados anotados com ID persistente.
-        """
-        assigned_tracks = set()
-        assigned_dets = set()
-        active_ids = list(self.tracks.keys())
-
-        # Matriz de afinidade por IoU
-        pares = []
-        for tid in active_ids:
-            for di, det in enumerate(detections):
-                score = calcular_iou(self.tracks[tid]["bbox"], det["bbox"])
-                pares.append((score, tid, di))
-        pares.sort(reverse=True, key=lambda x: x[0])
-
-        for score, tid, di in pares:
-            if score < self.iou_thresh:
-                continue
-            if tid in assigned_tracks or di in assigned_dets:
-                continue
-
-            # Se a classe mudar abruptamente entre associações com bom IoU, detecta troca de ID
-            if self.tracks[tid]["cls"] != detections[di]["cls"]:
-                self.id_switches += 1
-
-            old_cx = (self.tracks[tid]["bbox"][0] + self.tracks[tid]["bbox"][2]) / 2.0
-            new_cx = (detections[di]["bbox"][0] + detections[di]["bbox"][2]) / 2.0
-
-            # Atualiza estado do objeto rastreado
-            self.tracks[tid].update({
-                "bbox": detections[di]["bbox"],
-                "cls": detections[di]["cls"],
-                "conf": detections[di]["conf"],
-                "missing": 0,
-            })
-
-            # Verifica cruzamento da linha virtual
-            if old_cx < self.line_x <= new_cx:
-                self.crossed_in += 1
-            elif old_cx > self.line_x >= new_cx:
-                self.crossed_out += 1
-
-            # Atualiza histórico de coordenadas da trilha
-            cy = (detections[di]["bbox"][1] + detections[di]["bbox"][3]) / 2.0
-            self.trails[tid].append((int(new_cx), int(cy)))
-
-            assigned_tracks.add(tid)
-            assigned_dets.add(di)
-
-        # Registra novas detecções como novos tracks com IDs únicos
-        for di, det in enumerate(detections):
-            if di not in assigned_dets:
-                tid = self.next_id
-                self.next_id += 1
-                self.total_tracks_criadas += 1
-
-                cx = (det["bbox"][0] + det["bbox"][2]) / 2.0
-                cy = (det["bbox"][1] + det["bbox"][3]) / 2.0
-
-                self.tracks[tid] = {
-                    "bbox": det["bbox"],
-                    "cls": det["cls"],
-                    "conf": det["conf"],
-                    "missing": 0,
-                }
-                self.trails[tid] = deque(maxlen=self.trail_len)
-                self.trails[tid].append((int(cx), int(cy)))
-                assigned_tracks.add(tid)
-
-        # Incrementa contador de frames perdidos e remove tracks inativos
-        to_delete = []
-        for tid in list(self.tracks.keys()):
-            if tid not in assigned_tracks:
-                self.tracks[tid]["missing"] += 1
-                if self.tracks[tid]["missing"] > self.max_missing:
-                    to_delete.append(tid)
-
-        for tid in to_delete:
-            self.tracks.pop(tid, None)
-
-        # Monta resultado final
-        resultados = []
-        for tid, tr in self.tracks.items():
-            resultados.append({
-                "id": tid,
-                "bbox": tr["bbox"],
-                "cls": tr["cls"],
-                "conf": tr["conf"],
-                "trail": list(self.trails.get(tid, [])),
-            })
-        return resultados
-
-
-class Timer:
-    """Cronômetro utilitário para medição de latência em milissegundos."""
-    def __init__(self):
-        self.t0 = time.perf_counter()
-
-    def ms(self):
-        return (time.perf_counter() - self.t0) * 1000.0
-
-    def reset(self):
-        self.t0 = time.perf_counter()
-
 
 COCO_CLASSES_SSD = {
     1: "person", 2: "bicycle", 3: "car", 4: "motorcycle", 5: "airplane", 6: "bus",
@@ -614,8 +379,8 @@ COCO_CLASSES_SSD = {
 }
 
 
-def detectar_yolo_tiny(net, frame, classes, score_thresh=0.25, nms_thresh=0.40):
-    """Executa detecção YOLOv4-tiny com decodificação multiescala e NMS."""
+def detectar_yolo_tiny(net, frame, classes, score_thresh=0.20, nms_thresh=0.40):
+    # Executa detecção YOLOv4-tiny com decodificação multiescala e NMS.
     h_orig, w_orig = frame.shape[:2]
     blob = cv2.dnn.blobFromImage(frame, 1.0 / 255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
@@ -659,8 +424,8 @@ def detectar_yolo_tiny(net, frame, classes, score_thresh=0.25, nms_thresh=0.40):
     return deteccoes_finais, latencia_ms
 
 
-def detectar_ssd_mobilenet(net, frame, score_thresh=0.25, nms_thresh=0.40):
-    """Executa detecção SSD MobileNet v2 com decodificação e NMS."""
+def detectar_ssd_mobilenet(net, frame, score_thresh=0.20, nms_thresh=0.40):
+    # Executa detecção SSD MobileNet v2 com decodificação e NMS.
     h_orig, w_orig = frame.shape[:2]
     blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True, crop=False)
     net.setInput(blob)
@@ -701,3 +466,214 @@ def detectar_ssd_mobilenet(net, frame, score_thresh=0.25, nms_thresh=0.40):
             })
 
     return deteccoes_finais, latencia_ms
+
+
+def calcular_iou(box_a, box_b):
+    # Calcula Intersection over Union (IoU) entre duas caixas no formato [x1, y1, x2, y2].
+    ax1, ay1, ax2, ay2 = box_a
+    bx1, by1, bx2, by2 = box_b
+
+    ix1, iy1 = max(ax1, bx1), max(ay1, by1)
+    ix2, iy2 = min(ax2, bx2), min(ay2, by2)
+    iw, ih = max(0, ix2 - ix1), max(0, iy2 - iy1)
+    inter = iw * ih
+
+    area_a = max(0, ax2 - ax1) * max(0, ay2 - ay1)
+    area_b = max(0, bx2 - bx1) * max(0, by2 - by1)
+    union = area_a + area_b - inter
+
+    return 0.0 if union <= 0 else inter / union
+
+
+class IoUTracker:
+    # Rastreador de objetos com associação por IoU (Intersection over Union).
+    # Gerencia IDs persistentes, mantém trilhas de 30 frames, detecta cruzamento de linha virtual e ID switches.
+    def __init__(self, iou_thresh=0.25, max_missing=12, trail_len=30, line_x=384):
+        self.iou_thresh = iou_thresh
+        self.max_missing = max_missing
+        self.trail_len = trail_len
+        self.line_x = line_x
+
+        self.next_id = 1
+        self.tracks = {}
+        self.trails = {}
+        self.crossed_in = 0
+        self.crossed_out = 0
+        self.id_switches = 0
+        self.total_tracks_criadas = 0
+
+    def update(self, detections):
+        assigned_tracks = set()
+        assigned_dets = set()
+        active_ids = list(self.tracks.keys())
+
+        pares = []
+        for tid in active_ids:
+            for di, det in enumerate(detections):
+                score = calcular_iou(self.tracks[tid]["bbox"], det["bbox"])
+                pares.append((score, tid, di))
+        pares.sort(reverse=True, key=lambda x: x[0])
+
+        for score, tid, di in pares:
+            if score < self.iou_thresh:
+                continue
+            if tid in assigned_tracks or di in assigned_dets:
+                continue
+
+            if self.tracks[tid]["cls"] != detections[di]["cls"]:
+                self.id_switches += 1
+
+            old_cx = (self.tracks[tid]["bbox"][0] + self.tracks[tid]["bbox"][2]) / 2.0
+            new_cx = (detections[di]["bbox"][0] + detections[di]["bbox"][2]) / 2.0
+
+            self.tracks[tid].update({
+                "bbox": detections[di]["bbox"],
+                "cls": detections[di]["cls"],
+                "conf": detections[di]["conf"],
+                "missing": 0,
+            })
+
+            if old_cx < self.line_x <= new_cx:
+                self.crossed_in += 1
+            elif old_cx > self.line_x >= new_cx:
+                self.crossed_out += 1
+
+            cy = (detections[di]["bbox"][1] + detections[di]["bbox"][3]) / 2.0
+            self.trails[tid].append((int(new_cx), int(cy)))
+
+            assigned_tracks.add(tid)
+            assigned_dets.add(di)
+
+        for di, det in enumerate(detections):
+            if di not in assigned_dets:
+                tid = self.next_id
+                self.next_id += 1
+                self.total_tracks_criadas += 1
+
+                cx = (det["bbox"][0] + det["bbox"][2]) / 2.0
+                cy = (det["bbox"][1] + det["bbox"][3]) / 2.0
+
+                self.tracks[tid] = {
+                    "bbox": det["bbox"],
+                    "cls": det["cls"],
+                    "conf": det["conf"],
+                    "missing": 0,
+                }
+                self.trails[tid] = deque(maxlen=self.trail_len)
+                self.trails[tid].append((int(cx), int(cy)))
+                assigned_tracks.add(tid)
+
+        to_delete = []
+        for tid in list(self.tracks.keys()):
+            if tid not in assigned_tracks:
+                self.tracks[tid]["missing"] += 1
+                if self.tracks[tid]["missing"] > self.max_missing:
+                    to_delete.append(tid)
+
+        for tid in to_delete:
+            self.tracks.pop(tid, None)
+
+        resultados = []
+        for tid, tr in self.tracks.items():
+            resultados.append({
+                "id": tid,
+                "bbox": tr["bbox"],
+                "cls": tr["cls"],
+                "conf": tr["conf"],
+                "trail": list(self.trails.get(tid, [])),
+            })
+        return resultados
+
+
+class Timer:
+    def __init__(self):
+        self.t0 = time.perf_counter()
+
+    def ms(self):
+        return (time.perf_counter() - self.t0) * 1000.0
+
+    def reset(self):
+        self.t0 = time.perf_counter()
+
+
+def exibir_janela_interativa(nome_janela, imagem, titulo_info=None):
+    # Exibe uma imagem em janela OpenCV interativa que NUNCA fecha automaticamente.
+    # Permite fechar ao clicar no botão [X] da janela ou pressionando as teclas 'q', 'Q' ou 'ESC'.
+    if imagem is None:
+        return
+    cv2.namedWindow(nome_janela, cv2.WINDOW_NORMAL)
+    cv2.imshow(nome_janela, imagem)
+    msg = f"[+] Janela '{nome_janela}' aberta. Pressione 'q', 'ESC' ou clique no [X] da janela para fechar..."
+    if titulo_info:
+        msg += f" ({titulo_info})"
+    print(msg)
+
+    while True:
+        key = cv2.waitKey(50) & 0xFF
+        if key in (ord('q'), ord('Q'), 27):
+            break
+        try:
+            # Se a janela foi fechada pelo usuário clicando no 'X'
+            if cv2.getWindowProperty(nome_janela, cv2.WND_PROP_VISIBLE) < 1:
+                break
+        except Exception:
+            break
+
+    cv2.destroyWindow(nome_janela)
+
+
+def esperar_tecla_ou_x(nome_janela):
+    # Espera indeterminadamente até o usuário pressionar 'q', 'ESC' ou clicar no [X] da janela.
+    print(f"[+] Aguardando input na janela '{nome_janela}' (Pressione 'q', 'ESC' ou clique no [X])...")
+    while True:
+        key = cv2.waitKey(50) & 0xFF
+        if key in (ord('q'), ord('Q'), 27):
+            break
+        try:
+            if cv2.getWindowProperty(nome_janela, cv2.WND_PROP_VISIBLE) < 1:
+                break
+        except Exception:
+            break
+    cv2.destroyWindow(nome_janela)
+
+
+def criar_mosaico_imagens(imagens, titulos=None, cols=6, thumb_size=(240, 180), titulo_geral=None):
+    # Cria uma única imagem mosaico contendo múltiplas imagens em uma grade (grid).
+    # Ideal para exibir datasets inteiros (como as 18 fotos do Ex 1A ou 10 fotos do Ex 2A).
+    n = len(imagens)
+    if n == 0:
+        return None
+
+    tw, th = thumb_size
+    rows = (n + cols - 1) // cols
+    header_h = 45 if titulo_geral else 0
+    mosaic_w = cols * tw
+    mosaic_h = rows * th + header_h
+
+    canvas = np.zeros((mosaic_h, mosaic_w, 3), dtype=np.uint8)
+
+    if titulo_geral:
+        cv2.rectangle(canvas, (0, 0), (mosaic_w, header_h), (35, 35, 35), -1)
+        cv2.putText(canvas, titulo_geral, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.72, (0, 255, 255), 2)
+        cv2.putText(canvas, "[Pressione 'q', ESC ou clique [X] para continuar]", (mosaic_w - 460, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (200, 200, 200), 1)
+
+    for i, img in enumerate(imagens):
+        r = i // cols
+        c = i % cols
+        x0 = c * tw
+        y0 = header_h + r * th
+
+        if img is not None:
+            resized = cv2.resize(img, (tw, th))
+            canvas[y0:y0 + th, x0:x0 + tw] = resized
+
+        # Borda sutil
+        cv2.rectangle(canvas, (x0, y0), (x0 + tw, y0 + th), (60, 60, 60), 1)
+
+        # Rótulo individual
+        if titulos and i < len(titulos):
+            lbl = titulos[i]
+            cv2.rectangle(canvas, (x0, y0 + th - 24), (x0 + tw, y0 + th), (0, 0, 0), -1)
+            cv2.putText(canvas, lbl, (x0 + 6, y0 + th - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 255, 0), 1)
+
+    return canvas

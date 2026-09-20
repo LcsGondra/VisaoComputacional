@@ -1,16 +1,14 @@
-"""
-Exercício 3 — Item B: Rastreamento com ID Persistente, Trilhas Temporais e Contagem
-Competências: 3.1, 3.2 e 4.3
-
-Este script integra o detector de objetos em tempo real (YOLOv4-tiny) com um algoritmo
-de rastreamento por associação espacial e temporal (IoUTracker), garantindo:
-1. Atribuição de ID persistente e consistente para cada objeto detectado.
-2. Histórico e desenho das trilhas dos últimos 30 frames como linha contínua colorida.
-3. Linha virtual de contagem com detecção de fluxo bidirecional (entradas e saídas)
-   e acumulador de tráfego.
-4. Contabilização e cálculo da taxa de trocas de ID (ID switches) por minuto de vídeo.
-5. Discussão técnica e ética detalhada sobre sistemas de vigilância e contagem aérea por drones.
-"""
+# Exercício 3 — Item B: Rastreamento com ID Persistente, Trilhas Temporais e Contagem
+# Competências: 3.1, 3.2 e 4.3
+#
+# Este script integra o detector de objetos em tempo real (YOLOv4-tiny) com um algoritmo
+# de rastreamento por associação espacial e temporal (IoUTracker), garantindo:
+# 1. Atribuição de ID persistente e consistente para cada objeto detectado.
+# 2. Histórico e desenho das trilhas dos últimos 30 frames como linha contínua colorida.
+# 3. Linha virtual de contagem com detecção de fluxo bidirecional (entradas e saídas)
+#    e acumulador de tráfego.
+# 4. Contabilização e cálculo da taxa de trocas de ID (ID switches) por minuto de vídeo.
+# 5. Discussão técnica e ética detalhada sobre sistemas de vigilância e contagem aérea por drones.
 
 from pathlib import Path
 import time
@@ -20,9 +18,11 @@ import numpy as np
 from utils import (
     ensure_dirs,
     detectar_yolo_tiny,
-    gerar_video_transito,
+    obter_video_pedestres,
     obter_modelo_yolo_tiny,
     salvar_figura,
+    exibir_janela_interativa,
+    esperar_tecla_ou_x,
     DADOS_DIR,
     IoUTracker,
     PALETA_CORES,
@@ -30,13 +30,11 @@ from utils import (
 )
 
 
-def desenhar_rastreamento(frame, objetos_rastreados, tracker, line_x=400):
-    """
-    Desenha o estado completo do rastreador sobre o frame:
-    - Bounding box colorido por classe com ID persistente.
-    - Trilha dos últimos 30 frames.
-    - Linha virtual de contagem com HUD de telemetria.
-    """
+def desenhar_rastreamento(frame, objetos_rastreados, tracker, line_x=384):
+    # Desenha o estado completo do rastreador sobre o frame:
+    # - Bounding box colorido por classe com ID persistente.
+    # - Trilha dos últimos 30 frames.
+    # - Linha virtual de contagem com HUD de telemetria.
     vis = frame.copy()
     h, w = vis.shape[:2]
 
@@ -98,20 +96,23 @@ def main():
     # 1. Carrega modelo YOLOv4-tiny
     net_yolo, classes_yolo, _, _ = obter_modelo_yolo_tiny()
 
-    # 2. Carrega vídeo de trânsito
-    caminho_video = DADOS_DIR / "transito_urbano.mp4"
-    gerar_video_transito(caminho_video, n_frames=90, fps=20, size=(800, 450))
-
+    # 2. Carrega vídeo real oficial de pedestres (vtest.avi do OpenCV)
+    caminho_video = obter_video_pedestres()
     cap = cv2.VideoCapture(str(caminho_video))
-    fps_video = cap.get(cv2.CAP_PROP_FPS) or 20.0
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    duracao_segundos = total_frames / fps_video
+    if not cap.isOpened():
+        raise RuntimeError(f"Não foi possível abrir o vídeo {caminho_video}!")
+
+    fps_video = cap.get(cv2.CAP_PROP_FPS) or 10.0
+    total_frames_disponiveis = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    max_frames = min(100, total_frames_disponiveis)
+    duracao_segundos = max_frames / fps_video
     duracao_minutos = duracao_segundos / 60.0
 
-    print(f"[+] Processando vídeo: {total_frames} frames ({duracao_segundos:.1f} segundos / {duracao_minutos:.3f} min)")
+    print(f"[+] Processando vídeo real ({Path(caminho_video).name}): {max_frames} frames ({duracao_segundos:.1f}s / {duracao_minutos:.3f} min)")
 
-    # 3. Inicializa o rastreador por IoU com linha virtual no centro da pista (x = 400)
-    tracker = IoUTracker(iou_thresh=0.30, max_missing=10, trail_len=30, line_x=400)
+    # 3. Inicializa o rastreador por IoU com linha virtual no centro da praça (x = 384)
+    line_x = 384
+    tracker = IoUTracker(iou_thresh=0.25, max_missing=12, trail_len=30, line_x=line_x)
 
     snapshots = []
     frames_anotados = []
@@ -122,7 +123,7 @@ def main():
     print(f"{'Frame':<8} | {'Dets':<6} | {'Ativos':<8} | {'Entradas':<10} | {'Saídas':<10} | {'ID Switches'}")
     print("-" * 75)
 
-    while True:
+    while frame_count < max_frames:
         ret, frame = cap.read()
         if not ret:
             break
@@ -135,14 +136,30 @@ def main():
         rastreados = tracker.update(dets)
 
         # Renderização das anotações e trilhas
-        vis = desenhar_rastreamento(frame, rastreados, tracker, line_x=400)
+        vis = desenhar_rastreamento(frame, rastreados, tracker, line_x=line_x)
         frames_anotados.append(vis)
+
+        # Exibe o rastreamento em tempo real na janela do OpenCV
+        cv2.imshow("Exercicio 3B - Rastreamento IoU, Trilhas e Contagem (YOLOv4-tiny)", vis)
+        key = cv2.waitKey(15) & 0xFF
+        if key in (ord("q"), ord("Q"), 27):
+            break
+        if cv2.getWindowProperty("Exercicio 3B - Rastreamento IoU, Trilhas e Contagem (YOLOv4-tiny)", cv2.WND_PROP_VISIBLE) < 1:
+            break
 
         if frame_count % 20 == 0 or frame_count == 1:
             snapshots.append((frame_count, vis))
-            print(f"{frame_count:02d}/{total_frames:02d}    | {len(dets):<6} | {len(rastreados):<8} | {tracker.crossed_in:<10} | {tracker.crossed_out:<10} | {tracker.id_switches}")
+            print(f"{frame_count:02d}/{max_frames:02d}    | {len(dets):<6} | {len(rastreados):<8} | {tracker.crossed_in:<10} | {tracker.crossed_out:<10} | {tracker.id_switches}")
 
     cap.release()
+    try:
+        if cv2.getWindowProperty("Exercicio 3B - Rastreamento IoU, Trilhas e Contagem (YOLOv4-tiny)", cv2.WND_PROP_VISIBLE) >= 1:
+            vis_fim = frames_anotados[-1].copy()
+            cv2.putText(vis_fim, "[RASTREAMENTO CONCLUIDO - Pressione 'q', ESC ou feche no [X]]", (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+            cv2.imshow("Exercicio 3B - Rastreamento IoU, Trilhas e Contagem (YOLOv4-tiny)", vis_fim)
+            esperar_tecla_ou_x("Exercicio 3B - Rastreamento IoU, Trilhas e Contagem (YOLOv4-tiny)")
+    except Exception:
+        cv2.destroyAllWindows()
 
     # Cálculo da taxa de ID Switches por minuto
     taxa_id_switches_min = tracker.id_switches / max(1e-3, duracao_minutos)
@@ -201,6 +218,15 @@ def main():
         vw.write(f)
     vw.release()
     print(f"[+] Vídeo de rastreamento com trilhas salvo em: {caminho_video_track.name}")
+
+    # 7. Exibir painel de telemetria e trajetórias na janela OpenCV
+    painel_track = cv2.imread(str(SAIDAS_DIR / "at3b_rastreamento_ids.png"))
+    if painel_track is not None:
+        exibir_janela_interativa(
+            "Exercicio 3B - Telemetria de Rastreamento e Trajetorias",
+            painel_track,
+            "Pressione 'q', ESC ou feche no [X] para finalizar"
+        )
 
 
 if __name__ == "__main__":

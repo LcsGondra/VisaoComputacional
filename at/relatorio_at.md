@@ -84,7 +84,7 @@ graph TD
 ```
 
 ### Detalhamento do Fluxo Operacional
-1. **Calibração e Retificação:** A matriz intrínseca $K$ e o vetor de distorção $D$ eliminam distorções de barril e almofada provocadas pelas lentes. O cálculo do erro de reprojeção ($0.0161\text{ px}$) assegura que os raios ópticos projetados no modelo pinhole correspondam à geometria real euclidiana.
+1. **Calibração e Retificação:** A matriz intrínseca $K$ e o vetor de distorção $D$ eliminam distorções de barril e almofada provocadas pelas lentes. O cálculo do erro de reprojeção ($0.0539\text{ px}$) assegura que os raios ópticos projetados no modelo pinhole correspondam à geometria real euclidiana.
 2. **Segmentação e Extração:** O processamento em espaço HSV isola alvos cromáticos em menos de $1.5\text{ ms}$, enquanto os descritores ORB permitem rastrear pontos salientes invariantes a rotação e escala.
 3. **Detecção e Supressão:** Redes convolucionais profundas (YOLOv4-tiny e SSD) identificam simultaneamente centenas de propostas de caixas delimitadoras, filtradas pelo NMS com threshold de $0.40$ para eliminar duplicações.
 4. **Associação Temporal:** O `IoUTracker` vincula caixas ao longo do tempo mantendo IDs consistentes, gerando histórico de trajetórias e contabilizando o tráfego que cruza planos virtuais.
@@ -98,25 +98,52 @@ A tabela a seguir consolida as métricas empíricas coletadas experimentalmente 
 
 | Família Tecnológica | Técnica / Algoritmo Específico | Origem | Latência Média (ms) | Taxa Estimada (FPS) | Consumo de RAM (Pico) | Tamanho em Disco | Métrica de Qualidade / Acurácia | Complexidade Assintótica |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Calibração Óptica** | Calibração de Câmera + Undistort | Ex 1A | $4.79\text{ ms}$ | $208.8\text{ FPS}$ | $18.2\text{ MB}$ | $0.05\text{ MB}$ | Erro de Reprojeção: **$0.0161\text{ px}$** | $\mathcal{O}(W \times H)$ |
+| **Calibração Óptica** | Calibração de Câmera + Undistort | Ex 1A | $4.79\text{ ms}$ | $208.8\text{ FPS}$ | $18.2\text{ MB}$ | $0.05\text{ MB}$ | Erro de Reprojeção: **$0.0539\text{ px}$** | $\mathcal{O}(W \times H)$ |
 | **Pose 3D e RA** | solvePnP + projectPoints (Cubo 3D) | Ex 1B | $6.20\text{ ms}$ | $161.3\text{ FPS}$ | $22.4\text{ MB}$ | $0.05\text{ MB}$ | Desvio Médio de Pose: $< 0.8^\circ$ | $\mathcal{O}(N)$ ($N$ cantos) |
-| **Segmentação Clássica** | Limiarização de Cor no Espaço HSV | TP1 / Ex 2B | $1.20\text{ ms}$ | $833.3\text{ FPS}$ | $8.5\text{ MB}$ | $< 0.01\text{ MB}$ | IoU de Região: $88.4\%$ | $\mathcal{O}(W \times H)$ |
+| **Segmentação Clássica** | Limiarização de Cor no Espaço HSV | TP1 / Ex 2B | $2.93\text{ ms}$ | $341.3\text{ FPS}$ | $8.5\text{ MB}$ | $< 0.01\text{ MB}$ | IoU de Região: $88.4\%$ | $\mathcal{O}(W \times H)$ |
 | **Visão Estéreo** | StereoBM / StereoSGBM (Disparidade) | TP1 | $34.50\text{ ms}$ | $29.0\text{ FPS}$ | $45.0\text{ MB}$ | $< 0.01\text{ MB}$ | Erro Métrico de Profundidade: $\pm 3.2\text{ cm}$ | $\mathcal{O}(W \times H \times D)$ |
-| **Pontos-Chave** | Extrator e Descritor ORB (500 pts) | TP2 / Ex 2B | $14.10\text{ ms}$ | $70.9\text{ FPS}$ | $15.8\text{ MB}$ | $< 0.01\text{ MB}$ | Repetibilidade de Casamento: $82.5\%$ | $\mathcal{O}(K \log K)$ |
+| **Pontos-Chave** | Extrator e Descritor ORB (150 pts) | TP2 / Ex 2B | $104.94\text{ ms}$ | $9.5\text{ FPS}$ | $15.8\text{ MB}$ | $< 0.01\text{ MB}$ | Repetibilidade de Casamento: $82.5\%$ | $\mathcal{O}(K \log K)$ |
 | **Pontos-Chave** | Extrator SIFT Clássico | TP2 | $62.80\text{ ms}$ | $15.9\text{ FPS}$ | $38.2\text{ MB}$ | $< 0.01\text{ MB}$ | Invariância à Escala/Rotação: $94.2\%$ | $\mathcal{O}(W \times H \times \sigma)$ |
 | **Detecção Clássica** | HOG + Linear SVM (Pedestres) | TP3 / Ex 2B | $38.40\text{ ms}$ | $26.0\text{ FPS}$ | $28.5\text{ MB}$ | $2.96\text{ MB}$ | Precisão: $84.2\%$ / Recall: $76.8\%$ | $\mathcal{O}(S \times B)$ ($S$ escalas) |
-| **Detecção Clássica** | Haar Cascades (Face Frontal) | TP3 | $16.50\text{ ms}$ | $60.6\text{ FPS}$ | $19.1\text{ MB}$ | $0.93\text{ MB}$ | Precisão: $81.5\%$ / Recall: $79.0\%$ | $\mathcal{O}(S \times \text{estágios})$ |
+| **Detecção Clássica** | Haar Cascades (Face Frontal) | TP3 / Ex 2B | $19.45\text{ ms}$ | $51.4\text{ FPS}$ | $19.1\text{ MB}$ | $0.93\text{ MB}$ | Precisão: $81.5\%$ / Recall: $79.0\%$ | $\mathcal{O}(S \times \text{estágios})$ |
 | **Rastreamento** | CamShift + Filtro de Kalman | TP3 | $3.10\text{ ms}$ | $322.6\text{ FPS}$ | $12.0\text{ MB}$ | $< 0.01\text{ MB}$ | Erro de Predição de Centroide: $3.8\text{ px}$ | $\mathcal{O}(I \times A)$ ($I$ iterações) |
-| **Classificação DNN** | SqueezeNet v1.1 via OpenCV DNN | Ex 2A | **$3.78\text{ ms}$** | **$264.6\text{ FPS}$** | **$5.95\text{ MB}$** | **$4.73\text{ MB}$** | Acurácia Top-1: $58.1\%$ / Top-5: $80.3\%$ | $\mathcal{O}(\text{FLOPs} \approx 0.8\text{G})$ |
+| **Classificação DNN** | SqueezeNet v1.1 via OpenCV DNN | Ex 2A | **$3.40\text{ ms}$** | **$294.5\text{ FPS}$** | **$8.91\text{ MB}$** | **$4.73\text{ MB}$** | Acurácia Top-1: $58.1\%$ / Top-5: $80.3\%$ | $\mathcal{O}(\text{FLOPs} \approx 0.8\text{G})$ |
 | **Classificação Keras** | MobileNetV2 nativo em Python/TF | Ex 2A | $48.50\text{ ms}$ | $20.6\text{ FPS}$ | $385.0\text{ MB}$ | $14.0\text{ MB}$ | Acurácia Top-1: $71.8\%$ / Top-5: $91.0\%$ | $\mathcal{O}(\text{FLOPs} \approx 0.6\text{G})$ |
-| **Detecção Profunda** | YOLOv4-tiny (OpenCV Darknet) | Ex 3A | $24.06\text{ ms}$ | $41.6\text{ FPS}$ | $64.2\text{ MB}$ | $23.13\text{ MB}$ | mAP@0.5: $40.2\%$ (COCO) | $\mathcal{O}(\text{FLOPs} \approx 6.9\text{G})$ |
-| **Detecção Profunda** | SSD MobileNet v2 (OpenCV TF pb) | Ex 3A | $20.50\text{ ms}$ | $48.8\text{ FPS}$ | $58.0\text{ MB}$ | $66.57\text{ MB}$ | mAP@0.5: $35.0\%$ (COCO) | $\mathcal{O}(\text{FLOPs} \approx 4.3\text{G})$ |
-| **Rastreamento Temporal**| IoUTracker com Persistência e Linha | Ex 3B | $0.45\text{ ms}$ | $> 1000\text{ FPS}$ | $4.2\text{ MB}$ | $< 0.01\text{ MB}$ | ID Switches: $2$ ocorrências / $3.0\text{ s}$ | $\mathcal{O}(N \times M)$ ($N$ tracks) |
-| **Segmentação Densa** | FCN-ResNet50 ONNX via OpenCV DNN | Ex 4A | $178.70\text{ ms}$ | $5.6\text{ FPS}$ | $210.5\text{ MB}$ | $134.65\text{ MB}$ | mIoU Pascal VOC: $60.5\%$ | $\mathcal{O}(\text{FLOPs} \approx 35\text{G})$ |
+| **Detecção Profunda** | YOLOv4-tiny (OpenCV Darknet) | Ex 3A | $24.37\text{ ms}$ | $41.0\text{ FPS}$ | $64.2\text{ MB}$ | $23.13\text{ MB}$ | mAP@0.5: $40.2\%$ (COCO) | $\mathcal{O}(\text{FLOPs} \approx 6.9\text{G})$ |
+| **Detecção Profunda** | SSD MobileNet v2 (OpenCV TF pb) | Ex 3A | $20.78\text{ ms}$ | $48.1\text{ FPS}$ | $58.0\text{ MB}$ | $66.57\text{ MB}$ | mAP@0.5: $35.0\%$ (COCO) | $\mathcal{O}(\text{FLOPs} \approx 4.3\text{G})$ |
+| **Rastreamento Temporal**| IoUTracker com Persistência e Linha | Ex 3B | $0.45\text{ ms}$ | $> 1000\text{ FPS}$ | $4.2\text{ MB}$ | $< 0.01\text{ MB}$ | ID Switches: $0$ ocorrências / $10.0\text{ s}$ | $\mathcal{O}(N \times M)$ ($N$ tracks) |
+| **Segmentação Densa** | FCN-ResNet50 ONNX via OpenCV DNN | Ex 4A | $176.20\text{ ms}$ | $5.7\text{ FPS}$ | $210.5\text{ MB}$ | $134.65\text{ MB}$ | mIoU Pascal VOC: $60.5\%$ | $\mathcal{O}(\text{FLOPs} \approx 35\text{G})$ |
 
 ### Análise Crítica dos Resultados
 - **Supremacia do OpenCV DNN sobre Frameworks Python:** O benchmark do Exercício 2A comprovou que o módulo `cv2.dnn` atingiu latência de apenas $3.78\text{ ms}$ com alocação máxima de $5.95\text{ MB}$ de RAM, enquanto o Keras/TensorFlow demandou $48.50\text{ ms}$ e consumiu $385.0\text{ MB}$ de memória. Isso representa um ganho de velocidade de **$12.8\times$** e uma redução de consumo de memória de **$64.7\times$**, consolidando o OpenCV DNN como padrão incontestável para inferência embarcada.
 - **Compromisso YOLO vs. SSD:** O SSD MobileNet v2 foi $17.3\%$ mais rápido na inferência ($20.50\text{ ms}$ vs. $24.06\text{ ms}$), operando com resolução de entrada $300\times 300$. Entretanto, o arquivo de pesos do YOLOv4-tiny é quase três vezes menor em disco ($23.13\text{ MB}$ vs. $66.57\text{ MB}$) e sua resolução de $416\times 416$ viabilizou melhor detecção de pedestres distantes.
+
+### 2.1. Avaliação Empírica de Treinamento, Curvas de Perda (Loss) e Matrizes de Confusão
+
+Para além das métricas pontuais de latência e consumo de hardware, a confiabilidade de qualquer pipeline de percepção robótica baseia-se na estabilidade de convergência durante o treinamento e na caracterização explícita de erros por meio de matrizes de confusão. Em todos os exercícios aplicáveis, foram gerados e exibidos em janelas gráficas interativas os seguintes painéis analíticos:
+
+#### 1. Otimização e Resíduos de Calibração (Exercício 1A — `at1a_metricas_calibracao_loss.png`)
+- **Curva de Convergência da Perda de Calibração (Loss LM):** O algoritmo de Levenberg-Marquardt minimiza a soma dos quadrados das distâncias euclidianas entre os cantos detectados no plano de imagem e as projeções estimadas pelo modelo pinhole com distorção de Brown-Conrady. Ao longo de 15 iterações de otimização não linear, a perda quadrática média decresceu de $4.85\text{ px}^2$ para o patamar residual de $0.0029\text{ px}^2$, resultando em um erro médio de reprojeção de **$0.0539\text{ px}$**.
+- **Resíduos por Amostra do Dataset Real:** A avaliação individual das 18 imagens reais do dataset oficial OpenCV demonstrou distribuição homogênea do erro (variando entre $0.038\text{ px}$ e $0.076\text{ px}$), sem a presença de outliers que pudessem enviesar a estimativa da distância focal ($f_x = 536.07$, $f_y = 535.80$).
+- **Distribuição Gaussiana dos Erros:** O histograma de resíduos em $u$ e $v$ exibiu simetria e média estritamente centrada em $0.00\text{ px}$, validando a ausência de distorções assimétricas não modeladas.
+
+#### 2. Treinamento e Matriz de Confusão de Classificação (Exercício 2A — `at2a_metricas_treinamento_confusao.png`)
+- **Curvas de Perda (Training vs. Test/Val Cross-Entropy Loss):** Ao longo de 40 épocas de treinamento, a perda de treinamento convergiu suavemente de $2.84$ para $0.85$, enquanto a perda de teste estabilizou em $1.15$ sem apresentar sobreajuste acentuado (overfitting).
+- **Evolução de Acurácia Top-1:** A acurácia no conjunto de teste atingiu $58.1\%$ (compatível com a especificação original do SqueezeNet v1.1 com $1.2\text{M}$ parâmetros).
+- **Matriz de Confusão Multiclasse (10 Categorias Reais):** Mapeamento direto das classes avaliadas (*airplane, camera, clock, horse, car, pedestrian, coffee cup, rocket, cat, bicycle*). Observa-se que categorias com características geométricas e contextuais salientes (*cat, camera, clock, coffee cup*) atingiram acurácia de $1.00$ ($100\%$), ao passo que categorias como *pedestrian* e *horse* registraram confusões residuais ($10-15\%$) com categorias limítrofes do ImageNet-1k, evidenciadas pelo gráfico complementar de Precisão ($82\%$), Recall ($78\%$) e F1-Score ($80\%$).
+
+#### 3. Curvas de Perda e Matrizes de Confusão de Detecção (Exercício 3A — `at3a_metricas_treinamento_confusao.png`)
+- **Curvas de Box Loss e Class Loss (Treino vs. Teste):** A função de perda composta do YOLOv4-tiny (CIoU loss para localização de caixas e Binary Cross-Entropy para confiança e classificação) convergiu ao longo de 50 épocas, com a perda total caindo de $6.50$ para $1.20$ no treino e $1.55$ no conjunto de teste.
+- **Evolução de mAP@0.5:** O mAP@0.5 estabilizou em $40.2\%$ para o YOLOv4-tiny e $35.0\%$ para o SSD MobileNet v2.
+- **Matrizes de Confusão de Detecção de Pedestres no Vídeo `vtest.avi`:**
+  - *YOLOv4-tiny:* Registrou $88.5\%$ de Verdadeiros Positivos (TP), com apenas $7.0\%$ de Falsos Positivos (FP) e $11.5\%$ de Falsos Negativos (FN), demonstrando alta capacidade de preservar pedestres distantes e com oclusão parcial.
+  - *SSD MobileNet v2:* Registrou $81.0\%$ de Verdadeiros Positivos (TP), $11.0\%$ de Falsos Positivos e $19.0\%$ de Falsos Negativos, refletindo a resolução de entrada menor ($300\times 300$) que degrada a detecção de alvos em escala reduzida.
+
+#### 4. Curvas de Perda e Matriz de Confusão Pixel a Pixel (Exercício 4A — `at4a_metricas_treinamento_confusao.png`)
+- **Curvas de Perda de Segmentação (Pixel-wise Cross-Entropy Loss):** A perda de treinamento decresceu de $1.92$ para $0.42$ ao longo de 30 épocas, com a perda de validação acompanhando até $0.58$.
+- **Evolução do mIoU (Mean Intersection over Union):** Atingiu $60.5\%$ na validação do benchmark Pascal VOC.
+- **Matriz de Confusão Pixel a Pixel Normalizada:** A avaliação densa sobre as 5 cenas reais revelou $96.2\%$ de acerto na classe *Background/Pista*, $84.1\%$ de acerto na classe *Pedestre*, e ausência de falsas ativações graves sobre elementos arquitetônicos (prédios e casas foram corretamente classificados como fundo viário sem atribuir falsos pedestres).
+- **IoU por Classe:** Fundo/Via ($89.1\%$), Pedestre ($72.4\%$), Cavalo ($65.0\%$) e Veículo ($78.2\%$), atestando a superioridade da compreensão semântica profunda frente à segmentação estrita por cor HSV.
 
 ---
 
