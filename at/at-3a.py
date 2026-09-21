@@ -283,7 +283,7 @@ def main():
 
     # 2. Obter vídeo real de trânsito e vigilância de pedestres (vtest.avi oficial OpenCV)
     caminho_video = obter_video_pedestres()
-    print(f"[+] Carregando vídeo real oficial: {Path(caminho_video).name}")
+    print(f"Carregando vídeo real oficial: {Path(caminho_video).name}")
 
     cap = cv2.VideoCapture(str(caminho_video))
     if not cap.isOpened():
@@ -298,10 +298,10 @@ def main():
             break
         frames_lidos.append(f)
     cap.release()
-    print(f"[+] Vídeo real carregado com sucesso ({len(frames_lidos)} frames, {frames_lidos[0].shape[1]}x{frames_lidos[0].shape[0]})")
+    print(f"Vídeo real carregado com sucesso ({len(frames_lidos)} frames, {frames_lidos[0].shape[1]}x{frames_lidos[0].shape[0]})")
 
     # 3. Processamento Simultâneo com YOLOv4-tiny e SSD MobileNet v2 (Feed Lado a Lado)
-    print("\n[+] Executando detecção simultânea com YOLOv4-tiny e SSD MobileNet v2 no vídeo real...")
+    print("\nExecutando detecção simultânea com YOLOv4-tiny e SSD MobileNet v2 no vídeo real...")
     tempos_yolo = []
     tempos_ssd = []
     snapshots_yolo = []

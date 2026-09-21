@@ -40,7 +40,7 @@ def carregar_calibracao():
     K = dados["K"]
     dist = dados["dist"]
     erro_medio = float(dados["erro_medio"])
-    print(f"[+] Calibração carregada com sucesso ({CALIB_FILE.name}) | Erro base: {erro_medio:.4f} px")
+    print(f"Calibração carregada com sucesso ({CALIB_FILE.name}) | Erro base: {erro_medio:.4f} px")
     return K, dist
 
 
@@ -229,7 +229,7 @@ def main():
         for _ in range(3):
             vw.write(item["img"])
     vw.release()
-    print(f"[+] Demonstração em vídeo salva em: {caminho_video_out.name}")
+    print(f"Demonstração em vídeo salva em: {caminho_video_out.name}")
 
     # 6. Exibir todas as 18 fotos com o cubo 3D sobreposto em janela mosaico única
     imgs_cubos = [item["img"] for item in dados_ra]

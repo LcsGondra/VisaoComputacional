@@ -60,7 +60,7 @@ def calibrar_camera_real(imagens_caminhos, pattern_size=(9, 6), square_size_mm=2
     imgs_com_cantos = []
     titulos_com_cantos = []
 
-    print(f"[+] Processando {len(imagens_caminhos)} fotos reais do OpenCV para calibração...")
+    print(f"Processando {len(imagens_caminhos)} fotos reais do OpenCV para calibração...")
     for idx, caminho in enumerate(imagens_caminhos, start=1):
         img = cv2.imread(str(caminho))
         if img is None:
@@ -150,7 +150,7 @@ def main():
         erro_medio=erro_medio,
         img_shape=img_shape,
     )
-    print(f"\n[+] Matriz K e distorção salvas em: {CALIB_FILE.name}")
+    print(f"\nMatriz K e distorção salvas em: {CALIB_FILE.name}")
 
     # 4. Impressão dos parâmetros no terminal
     print("\n" + "-" * 80)

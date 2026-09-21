@@ -165,7 +165,7 @@ def main():
 
     # Obtém frame para teste do pipeline integrado
     frame_raw, caminho_frame = obter_frame_pipeline()
-    print(f"[+] Frame de entrada carregado: {caminho_frame.name} ({frame_raw.shape[1]}x{frame_raw.shape[0]})")
+    print(f"Frame de entrada carregado: {caminho_frame.name} ({frame_raw.shape[1]}x{frame_raw.shape[0]})")
 
     tempos = {}
 
@@ -218,37 +218,22 @@ def main():
         cv2.rectangle(vis, (bx, by), (bx + bw, by + bh), cor, 2)
         cv2.putText(vis, rotulo, (bx, by - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55, cor, 2)
 
-    # HUD Superior: Top-3 Predições DNN sobre a ROI
-    hud_w = 340
-    overlay = vis.copy()
-    cv2.rectangle(overlay, (vis.shape[1] - hud_w - 10, 10), (vis.shape[1] - 10, 105), (15, 15, 20), -1)
-    cv2.addWeighted(overlay, 0.8, vis, 0.2, 0, vis)
-    cv2.rectangle(vis, (vis.shape[1] - hud_w - 10, 10), (vis.shape[1] - 10, 105), (0, 215, 255), 1)
+    # Rótulo conciso da classificação profunda associada à ROI
+    top1_str = f"DNN: {top3[0][0][:16]} ({top3[0][1]*100:.1f}%)"
+    cv2.putText(vis, top1_str, (rx, ry + rh + 18), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (0, 255, 120), 2)
 
-    cv2.putText(vis, "OpenCV DNN (Top-3 ROI):", (vis.shape[1] - hud_w, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 215, 255), 2)
-    for j, (lbl, conf) in enumerate(top3):
-        txt = f"#{j+1}: {lbl[:18]} ({conf*100:.1f}%)"
-        cor_item = (0, 255, 0) if j == 0 else (220, 220, 220)
-        cv2.putText(vis, txt, (vis.shape[1] - hud_w, 52 + j * 20), cv2.FONT_HERSHEY_SIMPLEX, 0.46, cor_item, 1)
-
-    # HUD Inferior: Telemetria de Tempo de Execução por Etapa
-    hud_y = vis.shape[0] - 150
-    overlay2 = vis.copy()
-    cv2.rectangle(overlay2, (10, hud_y), (350, vis.shape[0] - 10), (15, 15, 20), -1)
-    cv2.addWeighted(overlay2, 0.82, vis, 0.18, 0, vis)
-    cv2.rectangle(vis, (10, hud_y), (350, vis.shape[0] - 10), (0, 255, 0), 1)
-
-    cv2.putText(vis, "TELEMETRIA DO PIPELINE:", (20, hud_y + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 255, 0), 2)
-    tempo_total = sum(tempos.values())
-
-    for idx, (nome, ms) in enumerate(tempos.items()):
-        cv2.putText(vis, f"{nome}: {ms:.2f} ms", (20, hud_y + 44 + idx * 18), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (230, 230, 230), 1)
-
-    cv2.putText(vis, f"TEMPO TOTAL: {tempo_total:.2f} ms ({1000/max(1e-3, tempo_total):.1f} FPS)", (20, hud_y + 134), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (0, 255, 255), 2)
-
-    # Salva o resultado final
+    # Salva o resultado final com a cena limpa (apenas bounding boxes, ROI e keypoints)
     saida_img = SAIDAS_DIR / "at2b_pipeline_integrado.png"
     cv2.imwrite(str(saida_img), vis)
+
+    tempo_total = sum(tempos.values())
+
+    # Exibição rica de todas as informações técnicas diretamente na CLI
+    print("\n" + "-" * 70)
+    print("CLASSIFICAÇÃO SQUEEZENET V1.1 NA ROI (OPENCV DNN):")
+    print("-" * 70)
+    for rank, (lbl, conf) in enumerate(top3, start=1):
+        print(f"  #{rank}: {lbl:<32} ({conf*100:5.1f}%)")
 
     print("\n" + "-" * 70)
     print("MÉTRICAS DE EXECUÇÃO DO PIPELINE INTEGRADO:")
@@ -259,7 +244,7 @@ def main():
     print("-" * 70)
     print(f"  {'TEMPO TOTAL DE PROCESSAMENTO':<32} : {tempo_total:7.2f} ms")
     print(f"  {'TAXA DE ATUALIZAÇÃO ESTIMADA':<32} : {1000/tempo_total:7.1f} FPS")
-    print(f"[+] Frame com anotações integradas salvo em: {saida_img.name}")
+    print(f"Frame com anotações integradas salvo em: {saida_img.name}")
 
     # 6. Exibe o resultado final integrado na janela do OpenCV
     exibir_janela_interativa(

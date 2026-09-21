@@ -228,11 +228,11 @@ def main():
 
     # 1. Carrega modelo FCN-ResNet50
     net_fcn, onnx_p = obter_modelo_fcn_segmentacao()
-    print(f"[+] Modelo FCN-ResNet50 carregado via OpenCV DNN ({onnx_p.stat().st_size / (1024*1024):.2f} MB)")
+    print(f"Modelo FCN-ResNet50 carregado via OpenCV DNN ({onnx_p.stat().st_size / (1024*1024):.2f} MB)")
 
     # 2. Obter as 5 imagens de cenas externas reais (pedestres.mp4, vtest.avi, camera, building, home)
     cenas_caminhos = obter_cenas_externas_reais(num_cenas=5)
-    print(f"[+] {len(cenas_caminhos)} cenas externas reais de bibliotecas/vídeos carregadas.")
+    print(f"{len(cenas_caminhos)} cenas externas reais de bibliotecas/vídeos carregadas.")
 
     # 3. Processamento das 5 imagens
     resultados_painel = []

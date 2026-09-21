@@ -71,19 +71,9 @@ def desenhar_rastreamento(frame, objetos_rastreados, tracker, line_x=384):
                 cv2.line(vis, p1, p2, cor_track, 2)
             cv2.circle(vis, trail[-1], 4, (0, 255, 255), -1)
 
-    # Painel de Telemetria Superior (HUD)
-    hud_w = 360
-    overlay = vis.copy()
-    cv2.rectangle(overlay, (10, 10), (hud_w, 115), (15, 15, 20), -1)
-    cv2.addWeighted(overlay, 0.85, vis, 0.15, 0, vis)
-    cv2.rectangle(vis, (10, 10), (hud_w, 115), (0, 255, 0), 1)
-
-    cv2.putText(vis, "TELEMETRIA DE RASTREAMENTO E CONTAGEM", (18, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (0, 255, 0), 2)
-    cv2.putText(vis, f"Objetos Ativos Rastreados: {len(objetos_rastreados)}", (18, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 255, 255), 1)
-    cv2.putText(vis, f"Entradas (L -> R): {tracker.crossed_in}  |  Saídas (R -> L): {tracker.crossed_out}", (18, 72), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (0, 255, 255), 1)
-    cv2.putText(vis, f"Total Cumulativo Cruzado: {tracker.crossed_in + tracker.crossed_out}", (18, 92), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (0, 255, 120), 1)
-    cv2.putText(vis, f"ID Switches Detectados: {tracker.id_switches}", (18, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (200, 200, 255), 1)
-
+    # Texto conciso de contagem no topo sem caixas sobrepostas cobrindo o vídeo
+    info_contagem = f"In: {tracker.crossed_in} | Out: {tracker.crossed_out} | Ativos: {len(objetos_rastreados)}"
+    cv2.putText(vis, info_contagem, (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2)
     return vis
 
 
@@ -108,7 +98,7 @@ def main():
     duracao_segundos = max_frames / fps_video
     duracao_minutos = duracao_segundos / 60.0
 
-    print(f"[+] Processando vídeo real ({Path(caminho_video).name}): {max_frames} frames ({duracao_segundos:.1f}s / {duracao_minutos:.3f} min)")
+    print(f"Processando vídeo real ({Path(caminho_video).name}): {max_frames} frames ({duracao_segundos:.1f}s / {duracao_minutos:.3f} min)")
 
     # 3. Inicializa o rastreador por IoU com linha virtual no centro da praça (x = 384)
     line_x = 384
@@ -217,7 +207,7 @@ def main():
     for f in frames_anotados:
         vw.write(f)
     vw.release()
-    print(f"[+] Vídeo de rastreamento com trilhas salvo em: {caminho_video_track.name}")
+    print(f"Vídeo de rastreamento com trilhas salvo em: {caminho_video_track.name}")
 
     # 7. Exibir painel de telemetria e trajetórias na janela OpenCV
     painel_track = cv2.imread(str(SAIDAS_DIR / "at3b_rastreamento_ids.png"))
