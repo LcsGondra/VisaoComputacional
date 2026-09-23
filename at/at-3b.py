@@ -1,6 +1,3 @@
-# Exercício 3 — Item B: Rastreamento com ID Persistente, Trilhas Temporais e Contagem
-# Competências: 3.1, 3.2 e 4.3
-#
 # Este script integra o detector de objetos em tempo real (YOLOv4-tiny) com um algoritmo
 # de rastreamento por associação espacial e temporal (IoUTracker), garantindo:
 # 1. Atribuição de ID persistente e consistente para cada objeto detectado.
@@ -165,29 +162,25 @@ def main():
     print(f"Taxa de ID Switches por Minuto      : {taxa_id_switches_min:.2f} switches/min")
     print("=" * 75)
 
-    # 4. Discussão Técnica e Considerações Éticas para Drones de Vigilância Urbana
-    discussao_etica = (
-        "\nDISCUSSÃO TÉCNICA E CONSIDERAÇÕES ÉTICAS (VIGILÂNCIA COM DRONES):\n"
-        "-----------------------------------------------------------------\n"
-        "1. Aplicação em Drones de Monitoramento Urbano:\n"
-        "   Sistemas de visão computacional embarcados em drones permitem mapear densidade\n"
-        "   de pedestres em eventos públicos, monitorar fluxo de tráfego em tempo real e\n"
-        "   planejar rotas de evacuação em situações de emergência sem necessidade de sensores fixos.\n"
-        "\n"
-        "2. Impactos na Privacidade e Legislação (LGPD / GDPR):\n"
-        "   O rastreamento aéreo contínuo gera preocupações críticas de privacidade. Mesmo sem\n"
-        "   reconhecimento facial direto, a combinação de trilhas de deslocamento (trajetórias)\n"
-        "   com localização espaço-temporal permite re-identificar cidadãos e rastrear rotas privadas.\n"
-        "   A conformidade exige anonimização na borda (Edge Computing) transmitindo apenas contagens\n"
-        "   e vetores de fluxo agregados, sem gravar ou transmitir imagens individuais de rostos.\n"
-        "\n"
-        "3. Riscos de Viés Algorítmico e Policiamento Preditivo:\n"
-        "   Erros de detecção (falsos positivos/negativos decorrentes de oclusão, variações de luz\n"
-        "   ou vestimenta) podem levar a alarmes falsos em operações policiais autônomas.\n"
-        "   Decisões críticas de segurança pública nunca devem ser automatizadas sem supervisão\n"
-        "   humana rigorosa (Human-in-the-Loop)."
-    )
-    print(discussao_etica)
+    # DISCUSSÃO TÉCNICA E CONSIDERAÇÕES ÉTICAS (VIGILÂNCIA COM DRONES):
+    # -----------------------------------------------------------------
+    # 1. Aplicação em Drones de Monitoramento Urbano:
+    #    Sistemas de visão computacional embarcados em drones permitem mapear densidade
+    #    de pedestres em eventos públicos, monitorar fluxo de tráfego em tempo real e
+    #    planejar rotas de evacuação em situações de emergência sem necessidade de sensores fixos.
+    #
+    # 2. Impactos na Privacidade e Legislação (LGPD / GDPR):
+    #    O rastreamento aéreo contínuo gera preocupações críticas de privacidade. Mesmo sem
+    #    reconhecimento facial direto, a combinação de trilhas de deslocamento (trajetórias)
+    #    com localização espaço-temporal permite re-identificar cidadãos e rastrear rotas privadas.
+    #    A conformidade exige anonimização na borda (Edge Computing) transmitindo apenas contagens
+    #    e vetores de fluxo agregados, sem gravar ou transmitir imagens individuais de rostos.
+    #
+    # 3. Riscos de Viés Algorítmico e Policiamento Preditivo:
+    #    Erros de detecção (falsos positivos/negativos decorrentes de oclusão, variações de luz
+    #    ou vestimenta) podem levar a alarmes falsos em operações policiais autônomas.
+    #    Decisões críticas de segurança pública nunca devem ser automatizadas sem supervisão
+    #    humana rigorosa (Human-in-the-Loop).
 
     # 5. Salvar painel de demonstração
     fig, axs = plt.subplots(1, len(snapshots), figsize=(18, 5))

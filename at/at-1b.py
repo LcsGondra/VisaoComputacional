@@ -1,10 +1,3 @@
-# Exercício 1 — Item B: Sobreposição de Realidade Aumentada com Estimação de Pose 3D
-# Competências: 1.2, 1.3 e 4.1
-#
-# Este script utiliza a calibração intrínseca obtida no Item A sobre o dataset oficial do OpenCV
-# para realizar a estimação de pose 3D (solvePnP) e projetar um cubo virtual de realidade
-# aumentada sobre o tabuleiro real de xadrez nas fotografias da câmera.
-#
 # Pipeline de Realidade Aumentada (RA):
 # ------------------------------------
 # 1. Leitura das fotos reais de calibração do OpenCV e detecção dos cantos internos (9x6).
@@ -44,15 +37,9 @@ def carregar_calibracao():
     return K, dist
 
 
-def definir_geometria_cubo(square_size=25.0, tamanho_aresta=37.5, pos_centro=True):
-    # Define os 8 vértices 3D de um cubo virtual de Realidade Aumentada:
-    # - Se pos_centro=True: posicionado exatamente no CENTRO do tabuleiro 9x6
-    #   (ponto médio X=4.0*s, Y=2.5*s), perfeitamente assentado no miolo do padrão
-    #   sem risco de oclusão por bordas ou textos.
-    # - Se pos_centro=False: posicionado no canto de origem (0, 0, 0).
-    # Base no plano Z = 0, topo em Z = -tamanho_aresta (Z apontando para a câmera).
+def definir_geometria_cubo(square_size=25.0, tamanho_aresta=None, pos_centro=False):
     s = square_size
-    edge = tamanho_aresta
+    edge = square_size if tamanho_aresta is None else tamanho_aresta
     if pos_centro:
         cx = 4.0 * s
         cy = 2.5 * s
@@ -63,14 +50,14 @@ def definir_geometria_cubo(square_size=25.0, tamanho_aresta=37.5, pos_centro=Tru
         y0, y1 = 0.0, edge
 
     vertices_3d = np.float32([
-        [x0, y0, 0],       # 0: base inferior-esq
-        [x1, y0, 0],       # 1: base inferior-dir
-        [x1, y1, 0],       # 2: base superior-dir
-        [x0, y1, 0],       # 3: base superior-esq
-        [x0, y0, -edge],   # 4: topo inferior-esq
-        [x1, y0, -edge],   # 5: topo inferior-dir
-        [x1, y1, -edge],   # 6: topo superior-dir
-        [x0, y1, -edge],   # 7: topo superior-esq
+        [x0, y0, 0],
+        [x1, y0, 0],
+        [x1, y1, 0],
+        [x0, y1, 0],
+        [x0, y0, -edge],
+        [x1, y0, -edge],
+        [x1, y1, -edge],
+        [x0, y1, -edge],
     ])
     return vertices_3d
 
@@ -106,19 +93,18 @@ def desenhar_cubo_faces_coloridas(img, pts_2d, alpha=0.45):
     return img
 
 
-def processar_sequencia_ra_real(caminhos_imagens, K, dist, pattern_size=(9, 6), square_size=25.0):
-    # Processa a sequência de fotos reais de calibração do OpenCV estimando a pose 3D.
+def processar_sequencia_ra_real(caminhos_imagens, K, dist, pattern_size=(9, 6), square_size=25.0, pos_centro=False):
     cols, rows = pattern_size
     objp = np.zeros((rows * cols, 3), np.float32)
     objp[:, :2] = np.mgrid[0:cols, 0:rows].T.reshape(-1, 2) * square_size
 
-    cubo_3d = definir_geometria_cubo(square_size=square_size, tamanho_aresta=37.5, pos_centro=True)
+    cubo_3d = definir_geometria_cubo(square_size=square_size, tamanho_aresta=square_size, pos_centro=pos_centro)
     criterio = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-    print("\n" + "-" * 75)
+    print("\n" + "-" * 105)
     print("ESTIMAÇÃO DE POSE E REALIDADE AUMENTADA (FOTOS REAIS OPENCV):")
-    print(f"{'Foto':<12} | {'Rot X (deg)':<12} | {'Rot Y (deg)':<12} | {'Rot Z (deg)':<12} | {'Distância (mm)':<16} | {'Status'}")
-    print("-" * 75)
+    print(f"{'Foto':<12} | {'Vetor Rotação rvec (rad)':<28} | {'Vetor Translação tvec (mm)':<32} | {'Status'}")
+    print("-" * 105)
 
     dados_processados = []
 
@@ -136,7 +122,6 @@ def processar_sequencia_ra_real(caminhos_imagens, K, dist, pattern_size=(9, 6), 
 
             if ret_pnp:
                 imgpts, _ = cv2.projectPoints(cubo_3d, rvec, tvec, K, dist)
-                # Mantém imagem 100% limpa, sem caixas de texto sobrepostas que possam ocluir a cena
                 vis = desenhar_cubo_faces_coloridas(frame.copy(), imgpts)
 
                 R, _ = cv2.Rodrigues(rvec)
@@ -154,11 +139,13 @@ def processar_sequencia_ra_real(caminhos_imagens, K, dist, pattern_size=(9, 6), 
                     "euler": (rx, ry, rz),
                     "dist": dist_euclidiana
                 })
-                print(f"{caminho.name:<12} | {rx:+10.2f}° | {ry:+10.2f}° | {rz:+10.2f}° | {dist_euclidiana:14.2f} mm | RASTREADO")
+                r_str = f"[{rvec[0,0]:+.3f}, {rvec[1,0]:+.3f}, {rvec[2,0]:+.3f}]"
+                t_str = f"[{tvec[0,0]:+7.1f}, {tvec[1,0]:+7.1f}, {tvec[2,0]:+7.1f}]"
+                print(f"{caminho.name:<12} | {r_str:<28} | {t_str:<32} | RASTREADO (Euler: {rx:+.1f}°, {ry:+.1f}°, {rz:+.1f}°)")
         else:
-            print(f"{caminho.name:<12} | {'--':<12} | {'--':<12} | {'--':<12} | {'--':<16} | NÃO DETECTADO")
+            print(f"{caminho.name:<12} | {'--':<28} | {'--':<32} | NÃO DETECTADO")
 
-    print("-" * 75)
+    print("-" * 105)
     return dados_processados
 
 
@@ -215,23 +202,20 @@ def main():
             bbox=dict(boxstyle="round,pad=0.5", facecolor="#f0f4f8", edgecolor="#0066cc", alpha=0.9)
         )
 
-    plt.suptitle("Exercício 1B: Realidade Aumentada (Cubo 3D no Centro do Tabuleiro)", fontsize=14, fontweight="bold", y=0.98)
+    plt.suptitle("Exercício 1B: Realidade Aumentada (Cubo 3D no Canto de Origem)", fontsize=14, fontweight="bold", y=0.98)
     plt.tight_layout()
     salvar_figura(SAIDAS_DIR / "at1b_ra_cubo.png", dpi=200)
 
-    # 5. Salvar vídeo com a sequência de fotos com RA
     caminho_video_out = SAIDAS_DIR / "at1b_ra_cubo.mp4"
     h, w = dados_ra[0]["img"].shape[:2]
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     vw = cv2.VideoWriter(str(caminho_video_out), fourcc, 2, (w, h))
     for item in dados_ra:
-        # Repete 3 frames por imagem para visualização suave da pose
         for _ in range(3):
             vw.write(item["img"])
     vw.release()
     print(f"Demonstração em vídeo salva em: {caminho_video_out.name}")
 
-    # 6. Exibir todas as 18 fotos com o cubo 3D sobreposto em janela mosaico única
     imgs_cubos = [item["img"] for item in dados_ra]
     titulos_cubos = [item["nome"] for item in dados_ra]
     mosaico_ra = criar_mosaico_imagens(
@@ -239,7 +223,7 @@ def main():
         titulos=titulos_cubos,
         cols=6,
         thumb_size=(240, 180),
-        titulo_geral="Realidade Aumentada (Cubo 3D Centralizado): 18 Fotos Reais com Pose solvePnP"
+        titulo_geral="Realidade Aumentada (Cubo 3D no Canto de Origem): 18 Fotos Reais com Pose solvePnP"
     )
     exibir_janela_interativa(
         "Exercicio 1B - Realidade Aumentada (18 Fotos Reais com Cubo 3D)",

@@ -1,10 +1,3 @@
-# Exercício 1 — Item A: Calibração de Câmera e Correção de Distorção (Dataset Oficial OpenCV)
-# Competências: 1.2, 1.3 e 4.1
-#
-# Este script realiza a calibração fotogramétrica completa de uma câmera utilizando o
-# dataset fotográfico oficial do OpenCV (série de imagens reais 'left' e 'right' de calibração),
-# composta por fotos reais de um padrão de xadrez 9x6 em diferentes ângulos e distâncias no espaço 3D.
-#
 # Significado Físico dos Parâmetros Estimados:
 # --------------------------------------------
 # 1. Matriz Intrínseca K:
@@ -42,7 +35,7 @@ from utils import (
 )
 
 
-def calibrar_camera_real(imagens_caminhos, pattern_size=(9, 6), square_size_mm=25.0):
+def calibrar_camera(imagens_caminhos, pattern_size=(9, 6), square_size_mm=25.0):
     # Detecta cantos do tabuleiro no dataset oficial do OpenCV e calcula a calibração intrínseca.
     cols, rows = pattern_size
 
@@ -107,7 +100,7 @@ def calibrar_camera_real(imagens_caminhos, pattern_size=(9, 6), square_size_mm=2
     erros_por_imagem = []
     for i in range(len(objpoints)):
         imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], K, dist)
-        erro = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+        erro = cv2.norm(imgpoints[i].reshape(-1, 2).astype(np.float32), imgpoints2.reshape(-1, 2).astype(np.float32), cv2.NORM_L2) / len(imgpoints2)
         erros_por_imagem.append(erro)
 
     erro_medio = float(np.mean(erros_por_imagem))
@@ -124,7 +117,7 @@ def main():
     caminhos_calib = obter_dataset_calibracao_opencv(num_imagens=18)
 
     # 2. Realiza a calibração com cantos (9, 6) e aresta de 25mm
-    K, dist, rvecs, tvecs, erros_img, erro_medio, valid_imgs, img_shape, imgs_cantos, titulos_cantos = calibrar_camera_real(
+    K, dist, rvecs, tvecs, erros_img, erro_medio, valid_imgs, img_shape, imgs_cantos, titulos_cantos = calibrar_camera(
         caminhos_calib, pattern_size=(9, 6), square_size_mm=25.0
     )
 

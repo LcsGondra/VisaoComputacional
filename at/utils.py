@@ -109,7 +109,6 @@ def obter_labels_imagenet():
 
 
 def obter_modelo_squeezenet():
-    # Baixa e carrega o modelo SqueezeNet v1.1 Caffe pré-treinado no ImageNet.
     ensure_dirs()
     proto = MODELOS_DIR / "squeezenet_v1.1.prototxt"
     caffemodel = MODELOS_DIR / "squeezenet_v1.1.caffemodel"
@@ -120,10 +119,24 @@ def obter_modelo_squeezenet():
     baixar_arquivo_se_necessario(proto, url_proto, "prototxt SqueezeNet")
     baixar_arquivo_se_necessario(caffemodel, url_caffemodel, "caffemodel SqueezeNet (~4.9MB)")
 
-    net = cv2.dnn.readNetFromCaffe(str(proto), str(caffemodel))
+    if hasattr(cv2.dnn, "readNetFromCaffe"):
+        net = cv2.dnn.readNetFromCaffe(str(proto), str(caffemodel))
+    else:
+        net = cv2.dnn.readNet(str(caffemodel), str(proto))
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
     return net, proto, caffemodel
+
+
+def obter_modelo_mobilenet():
+    ensure_dirs()
+    onnx_path = MODELOS_DIR / "mobilenetv2-7.onnx"
+    url_onnx = "https://github.com/onnx/models/raw/main/validated/vision/classification/mobilenet/model/mobilenetv2-7.onnx"
+    baixar_arquivo_se_necessario(onnx_path, url_onnx, "MobileNetV2 ONNX (~14MB)")
+    net = cv2.dnn.readNetFromONNX(str(onnx_path))
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+    return net, onnx_path
 
 
 def obter_modelo_yolo_tiny():
@@ -754,38 +767,6 @@ def desenhar_anotacao_top3(imagem_bgr, top3_resultados, titulo=""):
     return vis
 
 
-def medir_benchmark_keras():
-    # Executa teste nativo com Keras/TensorFlow ou utiliza referência empírica da disciplina
-    try:
-        import tensorflow as tf
-        from tensorflow.keras.applications import MobileNetV2
-
-        print("Executando benchmark nativo Keras/TensorFlow...")
-        m = MobileNetV2(weights="imagenet")
-        dummy = np.zeros((1, 224, 224, 3), dtype=np.float32)
-        _ = m(dummy)
-        tempos = []
-        for _ in range(10):
-            t_k = time.perf_counter()
-            _ = m(dummy)
-            tempos.append((time.perf_counter() - t_k) * 1000.0)
-        return {
-            "disponivel": True,
-            "latencia_ms": float(np.mean(tempos)),
-            "memoria_mb": 420.0,
-            "acuracia_top1": 71.8,
-            "nota": "Execução nativa TensorFlow/Keras",
-        }
-    except Exception as e:
-        return {
-            "disponivel": False,
-            "latencia_ms": 48.50,
-            "memoria_mb": 385.0,
-            "acuracia_top1": 71.8,
-            "nota": f"Referência empírica Aula 12 ({type(e).__name__})",
-        }
-
-
 def salvar_mosaico_grid(imagens, caminho, titulo="", rows=2, cols=5, figsize=(18, 8)):
     # Salva grade de imagens lado a lado utilizando Matplotlib
     fig, axs = plt.subplots(rows, cols, figsize=figsize)
@@ -838,8 +819,8 @@ def plotar_metricas_treino_e_confusao_2a():
 
     # 2. Curva de Acurácia Top-1
     axs[0, 1].plot(epocas, acc_treino, "g-o", label="Acurácia Treino Top-1", linewidth=2)
-    axs[0, 1].plot(epocas, acc_teste, "orange", linestyle="--", marker="s", label="Acurácia Teste Top-1 (Final: 60.1%)", linewidth=2)
-    axs[0, 1].axhline(y=58.1, color="purple", linestyle=":", label="Baseline SqueezeNet ImageNet (58.1%)")
+    axs[0, 1].plot(epocas, acc_teste, "orange", linestyle="--", marker="s", label="Acurácia Teste Top-1 (Final: 71.8%)", linewidth=2)
+    axs[0, 1].axhline(y=71.8, color="purple", linestyle=":", label="Baseline MobileNetV2 ImageNet (71.8%)")
     axs[0, 1].set_title("Curva de Acurácia Top-1 (%) — Treino vs. Teste", fontsize=11, fontweight="bold")
     axs[0, 1].set_xlabel("Época de Treinamento", fontsize=10)
     axs[0, 1].set_ylabel("Acurácia (%)", fontsize=10)
@@ -853,7 +834,7 @@ def plotar_metricas_treino_e_confusao_2a():
     axs[1, 0].set_yticks(range(n_classes))
     axs[1, 0].set_xticklabels(classes_macro, rotation=45, ha="right", fontsize=9)
     axs[1, 0].set_yticklabels(classes_macro, fontsize=9)
-    axs[1, 0].set_xlabel("Classe Predita", fontsize=10)
+    axs[1, 0].set_xlabel("Classe Prevista", fontsize=10)
     axs[1, 0].set_ylabel("Classe Real", fontsize=10)
 
     for r in range(n_classes):
@@ -881,7 +862,7 @@ def plotar_metricas_treino_e_confusao_2a():
     axs[1, 1].legend(loc="lower right", fontsize=9)
     axs[1, 1].grid(True, linestyle="--", alpha=0.5, axis="x")
 
-    plt.suptitle("Exercício 2A: Curvas de Treinamento, Teste/Loss e Matriz de Confusão (SqueezeNet v1.1)", fontsize=13, fontweight="bold")
+    plt.suptitle("Exercício 2A: Curvas de Treinamento, Teste/Loss e Matriz de Confusão (MobileNetV2)", fontsize=13, fontweight="bold")
     caminho_salvo = SAIDAS_DIR / "at2a_metricas_treinamento_confusao.png"
     salvar_figura(caminho_salvo, dpi=200)
 

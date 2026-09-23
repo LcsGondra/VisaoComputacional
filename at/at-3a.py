@@ -1,10 +1,3 @@
-# Exercício 3 — Item A: Detecção de Objetos em Tempo Real (YOLOv4-tiny vs. SSD MobileNet v2)
-# Competências: 3.1, 3.2 e 4.3
-#
-# Este script implementa e compara dois detectores de objetos consagrados na robótica móvel:
-# - YOLOv4-tiny (arquitetura Darknet baseada em âncoras e CSP-Darknet53 simplificado).
-# - SSD MobileNet v2 (arquitetura Single Shot MultiBox Detector sobre backbone MobileNetV2 com inverted residuals).
-#
 # Pipeline para cada modelo:
 # --------------------------
 # 1. Criação do blob apropriado (YOLO: 416x416 normalizado [0,1]; SSD: 300x300 BGR).
@@ -229,7 +222,7 @@ def plotar_metricas_treino_e_confusao_3a():
     axs[1, 0].set_yticks(range(n_c))
     axs[1, 0].set_xticklabels(classes_det, rotation=35, ha="right", fontsize=9)
     axs[1, 0].set_yticklabels(classes_det, fontsize=9)
-    axs[1, 0].set_xlabel("Classe Predita", fontsize=10)
+    axs[1, 0].set_xlabel("Classe Prevista", fontsize=10)
     axs[1, 0].set_ylabel("Classe Real (Ground Truth)", fontsize=10)
     for r in range(n_c):
         for c in range(n_c):
@@ -245,7 +238,7 @@ def plotar_metricas_treino_e_confusao_3a():
     axs[1, 1].set_yticks(range(n_c))
     axs[1, 1].set_xticklabels(classes_det, rotation=35, ha="right", fontsize=9)
     axs[1, 1].set_yticklabels(classes_det, fontsize=9)
-    axs[1, 1].set_xlabel("Classe Predita", fontsize=10)
+    axs[1, 1].set_xlabel("Classe Prevista", fontsize=10)
     axs[1, 1].set_ylabel("Classe Real (Ground Truth)", fontsize=10)
     for r in range(n_c):
         for c in range(n_c):
@@ -371,20 +364,16 @@ def main():
     print(f"{'Detecções Totais na Sequência':<35} | {total_det_yolo:8d}             | {total_det_ssd:8d}")
     print("=" * 80)
 
-    # 6. Conclusão Técnica e Justificativa para Robótica Embarcada
-    conclusao = (
-        "\nCONCLUSÃO TÉCNICA PARA ROBÓTICA EMBARCADA:\n"
-        "-------------------------------------------\n"
-        "Para veículos autônomos e robôs móveis com hardware restrito (Jetson Nano / Raspberry Pi),\n"
-        "a arquitetura mais indicada depende do compromisso entre taxa de atualização e acurácia:\n"
-        "1. O SSD MobileNet v2 se destaca pela menor latência e maior FPS devido à resolução 300x300\n"
-        "   e arquitetura leve baseada em convoluções separáveis em profundidade (Depthwise Separable),\n"
-        "   sendo a escolha ideal para robôs terrestres ágeis operando em CPUs com restrição de 5W.\n"
-        "2. O YOLOv4-tiny oferece detecções mais precisas de pedestres e pequenos obstáculos em distâncias\n"
-        "   maiores graças à entrada de 416x416 e conexões residuais CSP, mantendo taxa de quadros em tempo\n"
-        "   real (> 20 FPS). Portanto, o YOLOv4-tiny é recomendado para drones e robôs autônomos urbanos."
-    )
-    print(conclusao)
+    # CONCLUSÃO TÉCNICA E JUSTIFICATIVA PARA ROBÓTICA EMBARCADA:
+    # -----------------------------------------------------------
+    # Para veículos autônomos e robôs móveis com hardware restrito (Jetson Nano / Raspberry Pi),
+    # a arquitetura mais indicada depende do compromisso entre taxa de atualização e acurácia:
+    # 1. O SSD MobileNet v2 se destaca pela menor latência e maior FPS devido à resolução 300x300
+    #    e arquitetura leve baseada em convoluções separáveis em profundidade (Depthwise Separable),
+    #    sendo a escolha ideal para robôs terrestres ágeis operando em CPUs com restrição de 5W.
+    # 2. O YOLOv4-tiny oferece detecções mais precisas de pedestres e pequenos obstáculos em distâncias
+    #    maiores graças à entrada de 416x416 e conexões residuais CSP, mantendo taxa de quadros em tempo
+    #    real (> 20 FPS). Portanto, o YOLOv4-tiny é recomendado para drones e robôs autônomos urbanos.
 
     # 7. Salvar painel comparativo visual lado a lado
     fig, axs = plt.subplots(2, 2, figsize=(16, 9))

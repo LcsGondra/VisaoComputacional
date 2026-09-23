@@ -1,13 +1,3 @@
-# Exercício 4 — Item A: Segmentação Semântica com FCN-ResNet50 e Comparativo com HSV
-# Competências: 4.4 e todas
-#
-# Este script implementa segmentação semântica pixel a pixel utilizando o modelo profundo
-# FCN-ResNet50 (Fully Convolutional Network com backbone ResNet-50 pré-treinado no Pascal VOC)
-# via OpenCV DNN, processa 5 imagens de cenas externas urbanas (rua, calçada, parque, cruzamento, rodovia),
-# e realiza uma análise comparativa rigorosa com a segmentação por cor HSV estudada no TP1.
-#
-# Etapas Executadas:
-# ------------------
 # 1. Carregamento do modelo FCN-ResNet50 ONNX via OpenCV DNN.
 # 2. Processamento de 5 cenas externas:
 #    - Geração do mapa semântico colorido por categoria (21 classes VOC).
@@ -184,7 +174,7 @@ def plotar_metricas_treino_e_confusao_4a():
     axs[1, 0].set_yticks(range(n_s))
     axs[1, 0].set_xticklabels(classes_seg, rotation=35, ha="right", fontsize=9)
     axs[1, 0].set_yticklabels(classes_seg, fontsize=9)
-    axs[1, 0].set_xlabel("Classe Predita por Pixel", fontsize=10)
+    axs[1, 0].set_xlabel("Classe Prevista por Pixel", fontsize=10)
     axs[1, 0].set_ylabel("Classe Real (Ground Truth)", fontsize=10)
     for r in range(n_s):
         for c in range(n_s):
@@ -274,33 +264,29 @@ def main():
 
     print("-" * 80)
 
-    # 4. Discussão Técnica sobre Vantagens e Limitações para Veículos Autônomos
-    discussao_veiculos_autonomos = (
-        "\nDISCUSSÃO TÉCNICA: SEGMENTAÇÃO SEMÂNTICA vs. SEGMENTAÇÃO HSV EM VEÍCULOS AUTÔNOMOS:\n"
-        "===================================================================================\n"
-        "1. Vantagens e Limitações da Segmentação Semântica Profunda (FCN / DeepLabV3):\n"
-        "   - Vantagens: Compreensão conceitual de alto nível da cena. O modelo rotula 'o que é cada\n"
-        "     pixel' independentemente de variações severas de iluminação, sombras projetadas, oclusões\n"
-        "     parciais ou pinturas no solo. Permite distinguir categoricamente pista dirigível (drivable area),\n"
-        "     obstáculos verticais (pedestres/veículos) e limites da via (calçadas e vegetação).\n"
-        "   - Limitações: Elevadíssimo custo computacional e latência de processamento (~50 a 150 ms em CPU),\n"
-        "     inviável para loops de controle de alta frequência (> 30 Hz) em hardwares embarcados sem GPU/NPU.\n"
-        "     Vulnerável a domínios fora da distribuição de treinamento (chuva, neve, névoa densa).\n"
-        "\n"
-        "2. Vantagens e Limitações da Segmentação por Cor HSV (Técnica Clássica do TP1):\n"
-        "   - Vantagens: Latência desprezível (< 2 ms) e consumo mínimo de energia (< 1W), rodando em tempo\n"
-        "     real (> 100 FPS) até nos processadores mais simples (ARM Cortex-M / Raspberry Pi Zero).\n"
-        "     Ideal para tarefas específicas com assinaturas de cor controladas (marcações viárias amarelas,\n"
-        "     cones de sinalização laranjas, placas reflexivas e luzes de freio/semáforos).\n"
-        "   - Limitações: Altamente suscetível a variações de luminância, sombras, reflexos e asfalto molhado.\n"
-        "     Incapaz de atribuir significado semântico abstrato (uma lona azul no asfalto é confundida com carro).\n"
-        "\n"
-        "3. Arquitetura Híbrida Recomendada para Condução Autônoma:\n"
-        "   Um veículo autônomo de produção adota uma abordagem hierárquica:\n"
-        "   - Camada Reativa Rápida (100 Hz, HSV/Canny): detecção de faixas de rodagem e cones de perigo imediato.\n"
-        "   - Camada Deliberativa (15-20 Hz, FCN/DeepLab/YOLO): segmentação semântica global de espaço livre e pedestres."
-    )
-    print(discussao_veiculos_autonomos)
+    # DISCUSSÃO TÉCNICA: SEGMENTAÇÃO SEMÂNTICA vs. SEGMENTAÇÃO HSV EM VEÍCULOS AUTÔNOMOS:
+    # ===================================================================================
+    # 1. Vantagens e Limitações da Segmentação Semântica Profunda (FCN / DeepLabV3):
+    #    - Vantagens: Compreensão conceitual de alto nível da cena. O modelo rotula 'o que é cada
+    #      pixel' independentemente de variações severas de iluminação, sombras projetadas, oclusões
+    #      parciais ou pinturas no solo. Permite distinguir categoricamente pista dirigível (drivable area),
+    #      obstáculos verticais (pedestres/veículos) e limites da via (calçadas e vegetação).
+    #    - Limitações: Elevadíssimo custo computacional e latência de processamento (~50 a 150 ms em CPU),
+    #      inviável para loops de controle de alta frequência (> 30 Hz) em hardwares embarcados sem GPU/NPU.
+    #      Vulnerável a domínios fora da distribuição de treinamento (chuva, neve, névoa densa).
+    #
+    # 2. Vantagens e Limitações da Segmentação por Cor HSV (Técnica Clássica do TP1):
+    #    - Vantagens: Latência desprezível (< 2 ms) e consumo mínimo de energia (< 1W), rodando em tempo
+    #      real (> 100 FPS) até nos processadores mais simples (ARM Cortex-M / Raspberry Pi Zero).
+    #      Ideal para tarefas específicas com assinaturas de cor controladas (marcações viárias amarelas,
+    #      cones de sinalização laranjas, placas reflexivas e luzes de freio/semáforos).
+    #    - Limitações: Altamente suscetível a variações de luminância, sombras, reflexos e asfalto molhado.
+    #      Incapaz de atribuir significado semântico abstrato (uma lona azul no asfalto é confundida com carro).
+    #
+    # 3. Arquitetura Híbrida Recomendada para Condução Autônoma:
+    #    Um veículo autônomo de produção adota uma abordagem hierárquica:
+    #    - Camada Reativa Rápida (100 Hz, HSV/Canny): detecção de faixas de rodagem e cones de perigo imediato.
+    #    - Camada Deliberativa (15-20 Hz, FCN/DeepLab/YOLO): segmentação semântica global de espaço livre e pedestres.
 
     # 5. Salvar Painel Comparativo Lado a Lado (Original | FCN Semântica | HSV TP1)
     num_linhas = len(resultados_painel)

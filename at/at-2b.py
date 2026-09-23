@@ -1,9 +1,3 @@
-# Exercício 2 — Item B: Pipeline Integrativo Completo da Disciplina de Visão Computacional
-# Competências: 2.4, 3.3 e 4.2
-#
-# Este script unifica e encadeia sequencialmente todas as principais técnicas estudadas
-# ao longo da disciplina em um único fluxo de percepção robótica contínuo:
-#
 # Fluxo do Pipeline Integrativo:
 # -----------------------------
 # Etapa 1 (Calibração Geométrica — Ex 1):
@@ -36,7 +30,7 @@ from utils import (
     ensure_dirs,
     obter_frame_pipeline,
     obter_labels_imagenet,
-    obter_modelo_squeezenet,
+    obter_modelo_mobilenet,
     salvar_figura,
     exibir_janela_interativa,
     CALIB_FILE,
@@ -130,16 +124,18 @@ def etapa4_deteccao_pessoas_e_faces(frame):
 
 
 def etapa5_classificacao_dnn(roi_bgr, net, labels):
-    # Etapa 5 (Ex 2A): Classificação profunda da ROI com SqueezeNet v1.1 via OpenCV DNN.
     t0 = time.perf_counter()
     blob = cv2.dnn.blobFromImage(
         roi_bgr,
-        scalefactor=1.0,
-        size=(227, 227),
-        mean=(104.0, 117.0, 123.0),
-        swapRB=False,
+        scalefactor=1.0 / 255.0,
+        size=(224, 224),
+        mean=(0.485, 0.456, 0.406),
+        swapRB=True,
         crop=False,
     )
+    blob[0, 0] /= 0.229
+    blob[0, 1] /= 0.224
+    blob[0, 2] /= 0.225
     net.setInput(blob)
     out = net.forward()
     logits = out.flatten()
@@ -158,9 +154,8 @@ def main():
     print("EXERCÍCIO 2B — PIPELINE INTEGRATIVO COMPLETO (TP1 + TP2 + TP3 + AT)")
     print("=" * 80)
 
-    # Carrega calibração e modelos
     K, dist = carregar_calibracao()
-    net, _, _ = obter_modelo_squeezenet()
+    net, _ = obter_modelo_mobilenet()
     labels = obter_labels_imagenet()
 
     # Obtém frame para teste do pipeline integrado
@@ -228,9 +223,8 @@ def main():
 
     tempo_total = sum(tempos.values())
 
-    # Exibição rica de todas as informações técnicas diretamente na CLI
     print("\n" + "-" * 70)
-    print("CLASSIFICAÇÃO SQUEEZENET V1.1 NA ROI (OPENCV DNN):")
+    print("CLASSIFICAÇÃO MOBILENETV2 NA ROI (OPENCV DNN):")
     print("-" * 70)
     for rank, (lbl, conf) in enumerate(top3, start=1):
         print(f"  #{rank}: {lbl:<32} ({conf*100:5.1f}%)")
